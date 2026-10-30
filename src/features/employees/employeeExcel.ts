@@ -1,5 +1,14 @@
 import * as XLSX from 'xlsx';
-import { normalizeDraft, validateDraft, type EmployeeDraft } from '@/features/employees/employeeRules';
+import {
+  EMPLOYMENT_STATUS_LABELS,
+  EMPLOYMENT_STATUSES,
+  normalizeDraft,
+  validateDraft,
+  type EmployeeDraft,
+  type EmploymentStatus,
+} from '@/features/employees/employeeRules';
+
+const STATUS_HEADER = 'Trạng thái làm việc';
 
 const COLUMNS: { key: keyof EmployeeDraft; header: string }[] = [
   { key: 'code', header: 'Mã NV' },
@@ -9,11 +18,12 @@ const COLUMNS: { key: keyof EmployeeDraft; header: string }[] = [
   { key: 'position', header: 'Chức vụ' },
   { key: 'probationDate', header: 'Ngày thử việc' },
   { key: 'officialDate', header: 'Ngày chính thức' },
+  { key: 'employmentStatus', header: STATUS_HEADER },
   { key: 'phone', header: 'SĐT' },
   { key: 'email', header: 'Email' },
 ];
 
-const SAMPLE_ROW = ['NV010', 'Nguyễn Văn Mẫu', 'Văn Mẫu', 'Lễ tân', 'Nhân viên lễ tân', '01/11/2026', '', '0900000000', 'mau@example.com'];
+const SAMPLE_ROW = ['NV010', 'Nguyễn Văn Mẫu', 'Văn Mẫu', 'Lễ tân', 'Nhân viên lễ tân', '01/11/2026', '', EMPLOYMENT_STATUS_LABELS.probation, '0900000000', 'mau@example.com'];
 
 export interface ImportRowError {
   row: number;
@@ -55,6 +65,12 @@ function parseSpreadsheetDate(value: unknown): string | null {
   return null;
 }
 
+function parseEmploymentStatus(value: unknown): EmploymentStatus | null {
+  const text = String(value ?? '').trim();
+  if (!text) return 'probation';
+  return EMPLOYMENT_STATUSES.find((status) => EMPLOYMENT_STATUS_LABELS[status] === text) ?? null;
+}
+
 export async function parseEmployeeWorkbook(file: File): Promise<ImportParseResult> {
   const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
   const sheet = workbook.Sheets[workbook.SheetNames[0] ?? ''];
@@ -80,6 +96,13 @@ export async function parseEmployeeWorkbook(file: File): Promise<ImportParseResu
           return;
         }
         draft[column.key] = isoDate;
+      } else if (column.key === 'employmentStatus') {
+        const status = parseEmploymentStatus(value);
+        if (status === null) {
+          errors.push({ row, message: `${STATUS_HEADER} không hợp lệ (Thử việc, Làm việc chính thức hoặc Nghỉ việc).` });
+          return;
+        }
+        draft.employmentStatus = status;
       } else {
         draft[column.key] = String(value ?? '');
       }

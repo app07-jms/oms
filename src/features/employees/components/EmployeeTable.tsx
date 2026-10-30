@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDisplayDate, type EmployeeProfile } from '@/features/employees/employeeRules';
+import { formatDisplayDate, EMPLOYMENT_STATUS_LABELS, type EmployeeProfile, type EmploymentStatus } from '@/features/employees/employeeRules';
 import { getInitials } from '@/lib/text';
 import { cn } from '@/lib/utils';
 
@@ -17,9 +17,15 @@ interface EmployeeTableProps {
   onToggleLeave: (profile: EmployeeProfile, enabled: boolean) => void;
 }
 
-const COLUMN_COUNT = 12;
+const COLUMN_COUNT = 13;
 
 const HEAD_CLASS = 'whitespace-nowrap text-[#5C6670]';
+
+const STATUS_BADGE_CLASS: Record<EmploymentStatus, string> = {
+  official: 'border-transparent bg-success/10 text-success hover:bg-success/10',
+  probation: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50',
+  resigned: 'border-[#E2E8F0] bg-[#F1F5F9] text-[#5C6670] hover:bg-[#F1F5F9]',
+};
 
 export function EmployeeTable({ rows, isLoading, isSaving, emptyMessage, onEdit, onDelete, onToggleLeave }: EmployeeTableProps) {
   return (
@@ -35,6 +41,7 @@ export function EmployeeTable({ rows, isLoading, isSaving, emptyMessage, onEdit,
             <TableHead className={HEAD_CLASS}>Chức vụ</TableHead>
             <TableHead className={HEAD_CLASS}>Ngày thử việc</TableHead>
             <TableHead className={HEAD_CLASS}>Ngày chính thức</TableHead>
+            <TableHead className={HEAD_CLASS}>Trạng thái làm việc</TableHead>
             <TableHead className={HEAD_CLASS}>SĐT & Email</TableHead>
             <TableHead className={HEAD_CLASS}>Theo dõi phép</TableHead>
             <TableHead className={HEAD_CLASS}>Tài khoản</TableHead>
@@ -77,6 +84,13 @@ export function EmployeeTable({ rows, isLoading, isSaving, emptyMessage, onEdit,
                 </TableCell>
                 <TableCell className="whitespace-nowrap tabular-nums text-[#1F2A30]">
                   {formatDisplayDate(profile.officialDate)}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    className={cn('whitespace-nowrap px-2.5 py-0.5 font-medium', STATUS_BADGE_CLASS[profile.employmentStatus])}
+                  >
+                    {EMPLOYMENT_STATUS_LABELS[profile.employmentStatus]}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-0.5">

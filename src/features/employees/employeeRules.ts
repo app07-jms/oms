@@ -5,6 +5,15 @@ export const DEFAULT_INITIAL_LEAVE_DAYS = 12;
 export const INITIAL_ACCOUNT_PASSWORD = 'Jenius@2026';
 export const FILTER_DEPARTMENTS = ['Lễ tân', 'Buồng phòng', 'F&B', 'Bếp'] as const;
 
+export const EMPLOYMENT_STATUSES = ['probation', 'official', 'resigned'] as const;
+export type EmploymentStatus = (typeof EMPLOYMENT_STATUSES)[number];
+
+export const EMPLOYMENT_STATUS_LABELS: Record<EmploymentStatus, string> = {
+  probation: 'Thử việc',
+  official: 'Làm việc chính thức',
+  resigned: 'Nghỉ việc',
+};
+
 export interface EmployeeProfile {
   code: string;
   fullName: string;
@@ -13,6 +22,7 @@ export interface EmployeeProfile {
   position: string;
   probationDate: string | null;
   officialDate: string | null;
+  employmentStatus: EmploymentStatus;
   phone: string;
   email: string;
   hasAccount: boolean;
@@ -28,6 +38,7 @@ export interface EmployeeDraft {
   position: string;
   probationDate: string;
   officialDate: string;
+  employmentStatus: EmploymentStatus;
   phone: string;
   email: string;
 }
@@ -43,12 +54,14 @@ export type AccountFilter = 'all' | 'linked' | 'unlinked';
 export interface EmployeeFilters {
   department: string;
   account: AccountFilter;
+  employmentStatus: 'all' | EmploymentStatus;
   search: string;
 }
 
 export const DEFAULT_EMPLOYEE_FILTERS: EmployeeFilters = {
   department: 'all',
   account: 'all',
+  employmentStatus: 'all',
   search: '',
 };
 
@@ -65,6 +78,7 @@ export function createEmptyDraft(): EmployeeDraft {
     position: '',
     probationDate: '',
     officialDate: '',
+    employmentStatus: 'probation',
     phone: '',
     email: '',
   };
@@ -79,6 +93,7 @@ export function draftFromProfile(profile: EmployeeProfile): EmployeeDraft {
     position: profile.position,
     probationDate: profile.probationDate ?? '',
     officialDate: profile.officialDate ?? '',
+    employmentStatus: profile.employmentStatus,
     phone: profile.phone,
     email: profile.email,
   };
@@ -93,6 +108,7 @@ export function normalizeDraft(draft: EmployeeDraft): EmployeeDraft {
     position: draft.position.trim(),
     probationDate: draft.probationDate.trim(),
     officialDate: draft.officialDate.trim(),
+    employmentStatus: draft.employmentStatus,
     phone: draft.phone.trim(),
     email: draft.email.trim(),
   };
@@ -107,6 +123,9 @@ export function validateDraft(input: EmployeeDraft): string | null {
   if (!(DEPARTMENTS as readonly string[]).includes(draft.department)) return 'Bộ phận không hợp lệ.';
   if (draft.probationDate && !DATE_PATTERN.test(draft.probationDate)) return 'Ngày thử việc không hợp lệ.';
   if (draft.officialDate && !DATE_PATTERN.test(draft.officialDate)) return 'Ngày chính thức không hợp lệ.';
+  if (!(EMPLOYMENT_STATUSES as readonly string[]).includes(draft.employmentStatus)) {
+    return 'Vui lòng chọn trạng thái làm việc.';
+  }
   if (draft.email && !EMAIL_PATTERN.test(draft.email)) return 'Email không hợp lệ.';
   return null;
 }
@@ -117,6 +136,7 @@ export function applyEmployeeFilters(profiles: EmployeeProfile[], filters: Emplo
     if (filters.department !== 'all' && profile.department !== filters.department) return false;
     if (filters.account === 'linked' && !profile.hasAccount) return false;
     if (filters.account === 'unlinked' && profile.hasAccount) return false;
+    if (filters.employmentStatus !== 'all' && profile.employmentStatus !== filters.employmentStatus) return false;
     if (!query) return true;
     return [profile.code, profile.fullName, profile.displayName, profile.phone, profile.email].some((value) =>
       normalizeSearchText(value).includes(query)

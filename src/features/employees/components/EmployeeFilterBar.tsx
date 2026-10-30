@@ -2,9 +2,12 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
+  EMPLOYMENT_STATUSES,
+  EMPLOYMENT_STATUS_LABELS,
   FILTER_DEPARTMENTS,
   type AccountFilter,
   type EmployeeFilters,
+  type EmploymentStatus,
 } from '@/features/employees/employeeRules';
 
 interface EmployeeFilterBarProps {
@@ -49,6 +52,25 @@ export function EmployeeFilterBar({ filters, onFiltersChange }: EmployeeFilterBa
             {ACCOUNT_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={filters.employmentStatus}
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, employmentStatus: value as EmployeeFilters['employmentStatus'] })
+          }
+        >
+          <SelectTrigger aria-label="Trạng thái làm việc" className={selectTriggerClass}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả trạng thái</SelectItem>
+            {EMPLOYMENT_STATUSES.map((status: EmploymentStatus) => (
+              <SelectItem key={status} value={status}>
+                {EMPLOYMENT_STATUS_LABELS[status]}
               </SelectItem>
             ))}
           </SelectContent>

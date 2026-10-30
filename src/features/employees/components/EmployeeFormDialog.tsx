@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DEPARTMENTS } from '@/config/schedule';
-import { normalizeDraft, validateDraft, type EmployeeDraft } from '@/features/employees/employeeRules';
+import { normalizeDraft, validateDraft, EMPLOYMENT_STATUSES, EMPLOYMENT_STATUS_LABELS, type EmployeeDraft } from '@/features/employees/employeeRules';
 
 interface EmployeeFormDialogProps {
   mode: 'add' | 'edit';
@@ -169,6 +169,23 @@ export function EmployeeFormDialog({
                 />
               </Field>
             </div>
+            <Field label="Trạng thái làm việc" htmlFor="employee-employment-status">
+              <Select
+                value={draft.employmentStatus}
+                onValueChange={(value) => update('employmentStatus', value as EmployeeDraft['employmentStatus'])}
+              >
+                <SelectTrigger id="employee-employment-status" className={fieldClass}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {EMPLOYMENT_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {EMPLOYMENT_STATUS_LABELS[status]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
           </div>
 
           {(validationError || errorMessage) && (

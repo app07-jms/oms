@@ -3,11 +3,12 @@ import {
   normalizeDraft,
   type EmployeeDraft,
   type EmployeeProfile,
+  type EmploymentStatus,
   type ProvisioningOptions,
 } from '@/features/employees/employeeRules';
 
 const PROFILE_COLUMNS =
-  'code, full_name, display_name, department, position, probation_date, official_date, phone, email, has_account, leave_tracking, initial_leave_days';
+  'code, full_name, display_name, department, position, probation_date, official_date, employment_status, phone, email, has_account, leave_tracking, initial_leave_days';
 
 const DUPLICATE_CODE_MESSAGE = 'Mã NV đã tồn tại trong danh sách.';
 
@@ -19,6 +20,7 @@ interface EmployeeProfileRow {
   position: string | null;
   probation_date: string | null;
   official_date: string | null;
+  employment_status: EmploymentStatus;
   phone: string | null;
   email: string | null;
   has_account: boolean;
@@ -37,6 +39,7 @@ function isProfileRow(value: unknown): value is EmployeeProfileRow {
     typeof row.code === 'string' &&
     typeof row.full_name === 'string' &&
     typeof row.department === 'string' &&
+    typeof row.employment_status === 'string' &&
     typeof row.has_account === 'boolean' &&
     typeof row.leave_tracking === 'boolean' &&
     typeof row.initial_leave_days === 'number'
@@ -52,6 +55,7 @@ function toProfile(row: EmployeeProfileRow): EmployeeProfile {
     position: row.position ?? '',
     probationDate: row.probation_date,
     officialDate: row.official_date,
+    employmentStatus: row.employment_status,
     phone: row.phone ?? '',
     email: row.email ?? '',
     hasAccount: row.has_account,
@@ -69,6 +73,7 @@ function toProfilePayload(draft: EmployeeDraft) {
     position: values.position || null,
     probation_date: values.probationDate || null,
     official_date: values.officialDate || null,
+    employment_status: values.employmentStatus,
     phone: values.phone || null,
     email: values.email || null,
   };
