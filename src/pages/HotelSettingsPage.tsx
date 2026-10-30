@@ -1,5 +1,5 @@
 import { PageHeading } from '@/components/layout/PageHeading';
-import { useActiveRole } from '@/features/permissions/activeRoleContext';
+import { useSession } from '@/features/auth/AuthProvider';
 import { SUPER_ADMIN_ROLE_KEY } from '@/features/permissions/permissionRules';
 import { HotelSettingsCard } from '@/features/hotel/components/HotelSettingsCard';
 import { HotelInfoCard } from '@/features/hotel/components/HotelInfoCard';
@@ -10,7 +10,7 @@ import { useHotelSettings } from '@/features/hotel/HotelSettingsProvider';
 import { DepartmentsTab } from '@/features/settings/components/DepartmentsTab';
 
 export function HotelSettingsPage() {
-  const { activeRoleKey } = useActiveRole();
+  const activeRoleKey = useSession().account.roleKey;
   const { settings, refresh } = useHotelSettings();
 
   const isSuperAdmin = activeRoleKey === SUPER_ADMIN_ROLE_KEY;

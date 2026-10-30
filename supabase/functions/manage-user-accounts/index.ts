@@ -113,6 +113,17 @@ async function createAccount(admin: ReturnType<typeof createClient>, payload: Re
     return jsonResponse({ error: "Không thể lưu tài khoản. Vui lòng thử lại." }, 409);
   }
 
+  if (role !== "super_admin") {
+    const { data: hotels, error: hotelsError } = await admin.from("hotels").select("id");
+    if (hotelsError) throw hotelsError;
+    if (hotels.length > 0) {
+      const { error: assignError } = await admin
+        .from("app_user_hotels")
+        .insert(hotels.map((hotel) => ({ app_user_system_uid: inserted.system_uid, hotel_id: hotel.id })));
+      if (assignError) throw assignError;
+    }
+  }
+
   return jsonResponse({ ok: true, system_uid: inserted.system_uid }, 200);
 }
 
