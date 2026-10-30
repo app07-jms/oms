@@ -183,7 +183,7 @@ function RolePermissionEditor({ role, initialGrid, departments }: RolePermission
         <div className={`flex flex-col gap-2 transition-opacity duration-200 ${isDepartmentScope ? 'opacity-100' : 'opacity-50'}`}>
           <p className="text-sm font-medium text-[#1F2A30]">Bộ phận áp dụng</p>
           {departments.length === 0 ? (
-            <p className="text-sm text-[#5C6670]">Chưa có bộ phận nào. Thêm bộ phận ở tab Cấu hình hệ thống.</p>
+            <p className="text-sm text-[#5C6670]">Chưa có bộ phận nào. Thêm bộ phận ở Hệ thống {'>'} Cấu hình khách sạn.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {departments.map((name) => {
