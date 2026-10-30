@@ -56,12 +56,12 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4 py-12">
-      <div className="w-full max-w-sm rounded-2xl border border-[#E2E8F0] bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#4F7284] text-white">
-            <Hotel className="h-6 w-6" aria-hidden="true" />
+      <div className="w-full max-w-sm rounded-2xl border border-[#E2E8F0] bg-white p-8 shadow-[0_12px_32px_-12px_rgba(15,23,42,0.12)] sm:p-10">
+        <div className="mb-8 flex flex-col items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#4F7284] text-white shadow-sm">
+            <Hotel className="h-7 w-7" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-semibold leading-[1.2] text-[#0F172A]">OMS by Jenius</h1>
+          <h1 className="text-2xl font-bold leading-[1.2] text-[#4F7284]">OMS by Jenius</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>

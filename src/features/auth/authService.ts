@@ -11,6 +11,7 @@ const INACTIVE_ACCOUNT = 'Tài khoản đã bị khóa. Vui lòng liên hệ qu�
 const HOTEL_LOAD_ERROR = 'Không thể tải danh sách khách sạn.';
 const PROFILE_LOAD_ERROR = 'Không thể tải thông tin tài khoản.';
 const PERMISSION_LOAD_ERROR = 'Không thể tải quyền truy cập. Vui lòng đăng nhập lại.';
+const HOTEL_REF_COLUMNS = 'id, system_hotel_id, name, address, id_prefix';
 
 interface AccountRow {
   system_uid: string;
@@ -36,6 +37,8 @@ interface HotelRow {
   id: string;
   system_hotel_id: string;
   name: string;
+  address: string | null;
+  id_prefix: string | null;
 }
 
 function isAccountRow(value: unknown): value is AccountRow {
@@ -53,7 +56,13 @@ function isAccountRow(value: unknown): value is AccountRow {
 function isHotelRow(value: unknown): value is HotelRow {
   if (!value || typeof value !== 'object') return false;
   const row = value as Record<string, unknown>;
-  return typeof row.id === 'string' && typeof row.system_hotel_id === 'string' && typeof row.name === 'string';
+  return (
+    typeof row.id === 'string' &&
+    typeof row.system_hotel_id === 'string' &&
+    typeof row.name === 'string' &&
+    (row.address === null || typeof row.address === 'string') &&
+    (row.id_prefix === null || typeof row.id_prefix === 'string')
+  );
 }
 
 export async function endAuthSession(): Promise<void> {
@@ -118,10 +127,10 @@ async function fetchLinkedEmployee(employeeSystemUid: string | null): Promise<Em
 export async function fetchAccountHotels(account: AuthAccount): Promise<HotelRef[]> {
   const isSuperAdmin = account.roleKey === SUPER_ADMIN_ROLE_KEY;
   const { data, error } = isSuperAdmin
-    ? await supabase.from('hotels').select('id, system_hotel_id, name').order('name')
+    ? await supabase.from('hotels').select(HOTEL_REF_COLUMNS).order('name')
     : await supabase
         .from('app_user_hotels')
-        .select('hotels(id, system_hotel_id, name)')
+        .select(`hotels(${HOTEL_REF_COLUMNS})`)
         .eq('app_user_system_uid', account.systemUid);
   if (error || !Array.isArray(data)) throw new Error(HOTEL_LOAD_ERROR);
 
@@ -129,7 +138,13 @@ export async function fetchAccountHotels(account: AuthAccount): Promise<HotelRef
   const rows = items.map((item) => (isSuperAdmin ? item : (item as { hotels?: unknown } | null)?.hotels));
   if (!rows.every(isHotelRow)) throw new Error(HOTEL_LOAD_ERROR);
 
-  return rows.map((row) => ({ id: row.id, systemHotelId: row.system_hotel_id, name: row.name }));
+  return rows.map((row) => ({
+    id: row.id,
+    systemHotelId: row.system_hotel_id,
+    name: row.name,
+    address: row.address,
+    idPrefix: row.id_prefix,
+  }));
 }
 
 export async function fetchEffectivePermissions(account: AuthAccount): Promise<PermissionGrid> {

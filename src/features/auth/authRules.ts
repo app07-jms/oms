@@ -18,6 +18,8 @@ export interface HotelRef {
   id: string;
   systemHotelId: string;
   name: string;
+  address: string | null;
+  idPrefix: string | null;
 }
 
 export interface StoredSession {
