@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { navigationGroups } from '@/config/navigation';
 import { ClosingPage } from '@/pages/ClosingPage';
 import { DailyAttendancePage } from '@/pages/DailyAttendancePage';
+import { EmployeeProfilesPage } from '@/pages/EmployeeProfilesPage';
 import { LeavePage } from '@/pages/LeavePage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { TimesheetPage } from '@/pages/TimesheetPage';
@@ -13,6 +14,7 @@ const WORK_SCHEDULE_PATH = '/nhan-su/lich-lam-viec';
 const TIMESHEET_PATH = '/nhan-su/bang-cham-cong';
 const CLOSING_PATH = '/nhan-su/chot-cong';
 const LEAVE_PATH = '/nhan-su/so-phep';
+const EMPLOYEE_PROFILES_PATH = '/nhan-su/ho-so-nhan-vien';
 const firstPage = navigationGroups[0].items[0].path;
 
 function App() {
@@ -25,9 +27,10 @@ function App() {
         <Route path={TIMESHEET_PATH} element={<TimesheetPage />} />
         <Route path={CLOSING_PATH} element={<ClosingPage />} />
         <Route path={LEAVE_PATH} element={<LeavePage />} />
+        <Route path={EMPLOYEE_PROFILES_PATH} element={<EmployeeProfilesPage />} />
         {navigationGroups.flatMap((group) =>
           group.items
-            .filter((item) => ![DAILY_ATTENDANCE_PATH, WORK_SCHEDULE_PATH, TIMESHEET_PATH, CLOSING_PATH, LEAVE_PATH].includes(item.path))
+            .filter((item) => ![DAILY_ATTENDANCE_PATH, WORK_SCHEDULE_PATH, TIMESHEET_PATH, CLOSING_PATH, LEAVE_PATH, EMPLOYEE_PROFILES_PATH].includes(item.path))
             .map((item) => (
               <Route key={item.path} path={item.path} element={<PlaceholderPage group={group} item={item} />} />
             ))

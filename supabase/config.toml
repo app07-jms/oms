@@ -1,0 +1,2 @@
+[functions.provision-employee-account]
+verify_jwt = true

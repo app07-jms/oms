@@ -1,0 +1,131 @@
+import { DEPARTMENTS } from '@/config/schedule';
+import { normalizeSearchText } from '@/lib/text';
+
+export const DEFAULT_INITIAL_LEAVE_DAYS = 12;
+export const INITIAL_ACCOUNT_PASSWORD = 'Jenius@2026';
+export const FILTER_DEPARTMENTS = ['Lễ tân', 'Buồng phòng', 'F&B', 'Bếp'] as const;
+
+export interface EmployeeProfile {
+  code: string;
+  fullName: string;
+  displayName: string;
+  department: string;
+  position: string;
+  probationDate: string | null;
+  officialDate: string | null;
+  phone: string;
+  email: string;
+  hasAccount: boolean;
+  leaveTracking: boolean;
+  initialLeaveDays: number;
+}
+
+export interface EmployeeDraft {
+  code: string;
+  fullName: string;
+  displayName: string;
+  department: string;
+  position: string;
+  probationDate: string;
+  officialDate: string;
+  phone: string;
+  email: string;
+}
+
+export interface ProvisioningOptions {
+  createAccount: boolean;
+  trackLeave: boolean;
+  initialLeaveDays: number;
+}
+
+export type AccountFilter = 'all' | 'linked' | 'unlinked';
+
+export interface EmployeeFilters {
+  department: string;
+  account: AccountFilter;
+  search: string;
+}
+
+export const DEFAULT_EMPLOYEE_FILTERS: EmployeeFilters = {
+  department: 'all',
+  account: 'all',
+  search: '',
+};
+
+const CODE_PATTERN = /^[A-Za-z0-9._-]{1,20}$/;
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function createEmptyDraft(): EmployeeDraft {
+  return {
+    code: '',
+    fullName: '',
+    displayName: '',
+    department: DEPARTMENTS[0],
+    position: '',
+    probationDate: '',
+    officialDate: '',
+    phone: '',
+    email: '',
+  };
+}
+
+export function draftFromProfile(profile: EmployeeProfile): EmployeeDraft {
+  return {
+    code: profile.code,
+    fullName: profile.fullName,
+    displayName: profile.displayName,
+    department: profile.department,
+    position: profile.position,
+    probationDate: profile.probationDate ?? '',
+    officialDate: profile.officialDate ?? '',
+    phone: profile.phone,
+    email: profile.email,
+  };
+}
+
+export function normalizeDraft(draft: EmployeeDraft): EmployeeDraft {
+  return {
+    code: draft.code.trim(),
+    fullName: draft.fullName.trim(),
+    displayName: draft.displayName.trim(),
+    department: draft.department.trim(),
+    position: draft.position.trim(),
+    probationDate: draft.probationDate.trim(),
+    officialDate: draft.officialDate.trim(),
+    phone: draft.phone.trim(),
+    email: draft.email.trim(),
+  };
+}
+
+export function validateDraft(input: EmployeeDraft): string | null {
+  const draft = normalizeDraft(input);
+  if (!CODE_PATTERN.test(draft.code)) {
+    return 'Mã NV chỉ gồm chữ, số, dấu chấm, gạch dưới hoặc gạch ngang (tối đa 20 ký tự).';
+  }
+  if (!draft.fullName) return 'Vui lòng nhập họ và tên.';
+  if (!(DEPARTMENTS as readonly string[]).includes(draft.department)) return 'Bộ phận không hợp lệ.';
+  if (draft.probationDate && !DATE_PATTERN.test(draft.probationDate)) return 'Ngày thử việc không hợp lệ.';
+  if (draft.officialDate && !DATE_PATTERN.test(draft.officialDate)) return 'Ngày chính thức không hợp lệ.';
+  if (draft.email && !EMAIL_PATTERN.test(draft.email)) return 'Email không hợp lệ.';
+  return null;
+}
+
+export function applyEmployeeFilters(profiles: EmployeeProfile[], filters: EmployeeFilters): EmployeeProfile[] {
+  const query = normalizeSearchText(filters.search);
+  return profiles.filter((profile) => {
+    if (filters.department !== 'all' && profile.department !== filters.department) return false;
+    if (filters.account === 'linked' && !profile.hasAccount) return false;
+    if (filters.account === 'unlinked' && profile.hasAccount) return false;
+    if (!query) return true;
+    return [profile.code, profile.fullName, profile.displayName, profile.phone, profile.email].some((value) =>
+      normalizeSearchText(value).includes(query)
+    );
+  });
+}
+
+export function formatDisplayDate(isoDate: string | null): string {
+  if (!isoDate || !DATE_PATTERN.test(isoDate)) return '—';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
+}
