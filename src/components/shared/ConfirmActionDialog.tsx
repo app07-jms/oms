@@ -10,27 +10,34 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface ConfirmDeleteDialogProps {
+interface ConfirmActionDialogProps {
   title: string;
   description: string;
   confirmLabel: string;
-  isDeleting: boolean;
+  isPending: boolean;
   errorMessage: string | null;
+  tone?: 'danger' | 'primary';
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export function ConfirmDeleteDialog({
+const CONFIRM_TONE_CLASS = {
+  danger: 'bg-error text-white hover:bg-error/90',
+  primary: 'bg-[#4F7284] text-white hover:bg-[#406273]',
+} as const;
+
+export function ConfirmActionDialog({
   title,
   description,
   confirmLabel,
-  isDeleting,
+  isPending,
   errorMessage,
+  tone = 'danger',
   onCancel,
   onConfirm,
-}: ConfirmDeleteDialogProps) {
+}: ConfirmActionDialogProps) {
   return (
-    <AlertDialog open onOpenChange={(open) => !open && !isDeleting && onCancel()}>
+    <AlertDialog open onOpenChange={(open) => !open && !isPending && onCancel()}>
       <AlertDialogContent className="border-[#E2E8F0] bg-white sm:rounded-xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-xl font-semibold text-[#1F2A30]">{title}</AlertDialogTitle>
@@ -44,7 +51,7 @@ export function ConfirmDeleteDialog({
         )}
 
         <AlertDialogFooter className="gap-2 sm:gap-2">
-          <AlertDialogCancel disabled={isDeleting} className="border-[#E2E8F0] text-[#1F2A30]">
+          <AlertDialogCancel disabled={isPending} className="border-[#E2E8F0] text-[#1F2A30]">
             Hủy
           </AlertDialogCancel>
           <AlertDialogAction
@@ -52,10 +59,10 @@ export function ConfirmDeleteDialog({
               event.preventDefault();
               onConfirm();
             }}
-            disabled={isDeleting}
-            className="bg-error text-white hover:bg-error/90"
+            disabled={isPending}
+            className={CONFIRM_TONE_CLASS[tone]}
           >
-            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -9,7 +9,7 @@ import {
   type Department,
   type Position,
 } from '@/features/settings/settingsRules';
-import { ConfirmDeleteDialog } from '@/features/settings/components/ConfirmDeleteDialog';
+import { ConfirmActionDialog } from '@/components/shared/ConfirmActionDialog';
 import { DepartmentCard } from '@/features/settings/components/DepartmentCard';
 import { NameFormDialog } from '@/features/settings/components/NameFormDialog';
 
@@ -82,11 +82,11 @@ export function DepartmentsTab() {
         );
       case 'delete-department':
         return (
-          <ConfirmDeleteDialog
+          <ConfirmActionDialog
             title="Xóa bộ phận?"
             description={`Bộ phận ${current.department.name} và toàn bộ chức vụ thuộc bộ phận sẽ bị xóa. Không thể xóa khi còn nhân viên thuộc bộ phận này.`}
             confirmLabel="Xóa bộ phận"
-            isDeleting={catalog.isSaving}
+            isPending={catalog.isSaving}
             errorMessage={catalog.actionError}
             onCancel={() => setDialog(null)}
             onConfirm={() => finish(catalog.removeDepartment(current.department), 'Đã xóa bộ phận.')}
@@ -126,11 +126,11 @@ export function DepartmentsTab() {
         );
       case 'delete-position':
         return (
-          <ConfirmDeleteDialog
+          <ConfirmActionDialog
             title="Xóa chức vụ?"
             description={`Chức vụ ${current.position.name} sẽ bị xóa khỏi bộ phận ${current.department.name}. Không thể xóa khi còn nhân viên giữ chức vụ này.`}
             confirmLabel="Xóa chức vụ"
-            isDeleting={catalog.isSaving}
+            isPending={catalog.isSaving}
             errorMessage={catalog.actionError}
             onCancel={() => setDialog(null)}
             onConfirm={() =>

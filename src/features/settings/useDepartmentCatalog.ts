@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useCatalogResource } from '@/features/settings/useCatalogResource';
+import { useCatalogResource } from '@/hooks/useCatalogResource';
 import {
   deleteDepartment,
   deletePosition,

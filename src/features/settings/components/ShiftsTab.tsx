@@ -9,7 +9,7 @@ import {
   type ShiftDraft,
   type ShiftType,
 } from '@/features/settings/settingsRules';
-import { ConfirmDeleteDialog } from '@/features/settings/components/ConfirmDeleteDialog';
+import { ConfirmActionDialog } from '@/components/shared/ConfirmActionDialog';
 import { ShiftFormDialog } from '@/features/settings/components/ShiftFormDialog';
 import { ShiftTable } from '@/features/settings/components/ShiftTable';
 
@@ -79,11 +79,11 @@ export function ShiftsTab() {
       />
 
       {dialog && (dialog.mode === 'delete' ? (
-        <ConfirmDeleteDialog
+        <ConfirmActionDialog
           title="Xóa ca làm việc?"
           description={`Ca ${dialog.shift.name} (${dialog.shift.code}) sẽ bị xóa khỏi danh mục. Không thể xóa khi ca đang được dùng trong lịch làm việc.`}
           confirmLabel="Xóa ca"
-          isDeleting={shifts.isSaving}
+          isPending={shifts.isSaving}
           errorMessage={shifts.actionError}
           onCancel={() => setDialog(null)}
           onConfirm={() => handleDelete(dialog.shift)}

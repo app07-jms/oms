@@ -49,6 +49,7 @@ export function useCatalogResource<T>(load: () => Promise<T>, loadErrorMessage: 
     isSaving,
     actionError,
     clearActionError: () => setActionError(null),
+    refresh,
     runAction,
   };
 }

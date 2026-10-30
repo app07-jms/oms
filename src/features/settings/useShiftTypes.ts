@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useCatalogResource } from '@/features/settings/useCatalogResource';
+import { useCatalogResource } from '@/hooks/useCatalogResource';
 import { deleteShiftType, fetchShiftTypes, insertShiftType, updateShiftType } from '@/features/settings/settingsService';
 import type { ShiftDraft } from '@/features/settings/settingsRules';
 
