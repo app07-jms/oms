@@ -4,6 +4,8 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { navigationGroups, type NavGroup } from '@/config/navigation';
+import { visibleNavigationGroups } from '@/features/hotel/hotelRules';
+import { useHotelSettings } from '@/features/hotel/HotelSettingsProvider';
 import { cn } from '@/lib/utils';
 
 interface NavTreeProps {
@@ -12,9 +14,12 @@ interface NavTreeProps {
 }
 
 export function NavTree({ collapsed = false, onNavigate }: NavTreeProps) {
+  const { settings } = useHotelSettings();
+  const groups = visibleNavigationGroups(navigationGroups, settings.modules);
+
   return (
     <nav aria-label="Menu chính" className="flex flex-col gap-1">
-      {navigationGroups.map((group) =>
+      {groups.map((group) =>
         collapsed ? (
           <CollapsedNavGroup key={group.id} group={group} onNavigate={onNavigate} />
         ) : (

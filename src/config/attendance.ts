@@ -1,16 +1,3 @@
-import type { Coordinates } from '@/lib/geo';
-
-export const HOTEL_GEOFENCE = {
-  name: 'Khách sạn Jenius',
-  center: { latitude: 10.7769, longitude: 106.7009 } satisfies Coordinates,
-  radiusMeters: 50,
-};
-
-export const SIMULATED_POSITIONS = {
-  inRange: { latitude: 10.77692, longitude: 106.70092 } satisfies Coordinates,
-  outOfRange: { latitude: 10.7799, longitude: 106.7009 } satisfies Coordinates,
-};
-
 export const CURRENT_EMPLOYEE = {
   code: 'NV001',
   fullName: 'Nguyễn Minh Anh',

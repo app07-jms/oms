@@ -1,22 +1,41 @@
 import { CheckCircle2, TriangleAlert } from 'lucide-react';
-import { CURRENT_EMPLOYEE, HOTEL_GEOFENCE, SHIFTS, SIMULATED_POSITIONS } from '@/config/attendance';
-import { distanceInMeters } from '@/lib/geo';
+import { CURRENT_EMPLOYEE, SHIFTS } from '@/config/attendance';
+import { distanceInMeters, type Coordinates } from '@/lib/geo';
 import { formatShiftHours } from '@/features/attendance/attendanceRules';
+import { useHotelSettings } from '@/features/hotel/HotelSettingsProvider';
 import { cn } from '@/lib/utils';
+
+const METERS_PER_DEGREE_LATITUDE = 111_320;
+const IN_RANGE_OFFSET_RATIO = 0.1;
+const OUT_OF_RANGE_RADIUS_MULTIPLE = 3;
 
 interface AttendanceContextPanelProps {
   isInRange: boolean;
   isDeviceValid: boolean;
 }
 
+function offsetNorth(center: Coordinates, meters: number): Coordinates {
+  return { latitude: center.latitude + meters / METERS_PER_DEGREE_LATITUDE, longitude: center.longitude };
+}
+
 export function AttendanceContextPanel({ isInRange, isDeviceValid }: AttendanceContextPanelProps) {
-  const simulatedPosition = isInRange ? SIMULATED_POSITIONS.inRange : SIMULATED_POSITIONS.outOfRange;
-  const distance = Math.round(distanceInMeters(HOTEL_GEOFENCE.center, simulatedPosition));
+  const { settings } = useHotelSettings();
   const initials = CURRENT_EMPLOYEE.fullName
     .split(' ')
     .slice(-2)
     .map((word) => word[0])
     .join('');
+
+  const center =
+    settings.latitude !== null && settings.longitude !== null
+      ? { latitude: settings.latitude, longitude: settings.longitude }
+      : null;
+  const radius = settings.geofenceRadiusM;
+  const simulatedPosition = center
+    ? offsetNorth(center, isInRange ? radius * IN_RANGE_OFFSET_RATIO : radius * OUT_OF_RANGE_RADIUS_MULTIPLE)
+    : null;
+  const distance =
+    center && simulatedPosition ? Math.round(distanceInMeters(center, simulatedPosition)) : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,7 +65,11 @@ export function AttendanceContextPanel({ isInRange, isDeviceValid }: AttendanceC
           isValid={isInRange}
           validText="GPS: Hợp lệ"
           invalidText="GPS: Ngoài bán kính"
-          detail={`Cách ${HOTEL_GEOFENCE.name} khoảng ${distance} m (cho phép ${HOTEL_GEOFENCE.radiusMeters} m)`}
+          detail={
+            distance === null
+              ? 'Chưa cấu hình vị trí khách sạn. Vui lòng cập nhật trong Cấu hình khách sạn.'
+              : `Cách ${settings.name} khoảng ${distance} m (cho phép ${radius} m)`
+          }
         />
         <VerificationRow
           isValid={isDeviceValid}

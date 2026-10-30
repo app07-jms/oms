@@ -8,11 +8,12 @@ interface ClosingSummaryTableProps {
   summaries: LockedSummary[];
   isLoading: boolean;
   isLocked: boolean;
+  standardShiftHours: number;
 }
 
 const COLUMN_COUNT = 10;
 
-export function ClosingSummaryTable({ summaries, isLoading, isLocked }: ClosingSummaryTableProps) {
+export function ClosingSummaryTable({ summaries, isLoading, isLocked, standardShiftHours }: ClosingSummaryTableProps) {
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -52,7 +53,7 @@ export function ClosingSummaryTable({ summaries, isLoading, isLocked }: ClosingS
                 <TableCell className="text-[#1F2A30]">{summary.fullName}</TableCell>
                 <TableCell className="text-[#5C6670]">{summary.department}</TableCell>
                 <TableCell className="text-right tabular-nums text-[#1F2A30]">
-                  {formatCredit(summary.creditedHours)}
+                  {formatCredit(summary.creditedHours, standardShiftHours)}
                 </TableCell>
                 <TableCell className="text-right tabular-nums text-[#1F2A30]">
                   {summary.otHours > 0 ? formatHours(summary.otHours) : '--'}

@@ -1,5 +1,4 @@
 import { LATE_TOLERANCE_MINUTES } from '@/config/attendance';
-import { OT_THRESHOLD_HOURS, STANDARD_SHIFT_HOURS } from '@/config/payroll';
 import { normalizeSearchText } from '@/lib/text';
 import {
   getCheckTiming,
@@ -87,8 +86,8 @@ export function getPeriodRange(period: string): DateRange {
   };
 }
 
-export function formatCredit(hours: number): string {
-  return `${(hours / STANDARD_SHIFT_HOURS).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} công`;
+export function formatCredit(hours: number, standardShiftHours: number): string {
+  return `${(hours / standardShiftHours).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} công`;
 }
 
 export function formatHours(hours: number): string {
@@ -115,7 +114,8 @@ function groupAdjustmentsByRecord(adjustments: PayrollAdjustment[]): Map<string,
 export function buildClosingRows(
   records: AttendanceRecord[],
   employees: Employee[],
-  adjustments: PayrollAdjustment[]
+  adjustments: PayrollAdjustment[],
+  standardShiftHours: number
 ): ClosingRow[] {
   const employeeByCode = new Map(employees.map((employee) => [employee.code, employee]));
   const adjustmentsByRecord = groupAdjustmentsByRecord(adjustments);
@@ -124,13 +124,13 @@ export function buildClosingRows(
     .map((record) => {
       const workedMs = getWorkedMs(record);
       const workedHours = workedMs === null ? null : workedMs / HOUR_MS;
-      const otHours = workedHours === null ? 0 : Math.max(0, workedHours - OT_THRESHOLD_HOURS);
+      const otHours = workedHours === null ? 0 : Math.max(0, workedHours - standardShiftHours);
       const otState: OvertimeState = otHours === 0 ? 'none' : (record.otStatus ?? 'pending');
       const creditedHours =
         workedHours === null
           ? 0
           : otState === 'pending' || otState === 'rejected'
-            ? Math.min(workedHours, STANDARD_SHIFT_HOURS)
+            ? Math.min(workedHours, standardShiftHours)
             : workedHours;
       const { lateMinutes, earlyMinutes } = getCheckTiming(record);
       const recordAdjustments = adjustmentsByRecord.get(record.id) ?? [];

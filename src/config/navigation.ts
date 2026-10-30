@@ -1,4 +1,5 @@
 import { Settings, Users, type LucideIcon } from 'lucide-react';
+import type { HotelModuleKey } from '@/features/hotel/hotelRules';
 
 export interface NavItem {
   title: string;
@@ -10,6 +11,7 @@ export interface NavGroup {
   title: string;
   icon: LucideIcon;
   items: NavItem[];
+  moduleKey?: HotelModuleKey;
 }
 
 export const navigationGroups: NavGroup[] = [
@@ -17,6 +19,7 @@ export const navigationGroups: NavGroup[] = [
     id: 'nhan-su',
     title: 'Nhân sự',
     icon: Users,
+    moduleKey: 'workforce',
     items: [
       { title: 'Chấm công hàng ngày', path: '/nhan-su/cham-cong-hang-ngay' },
       { title: 'Lịch làm việc', path: '/nhan-su/lich-lam-viec' },

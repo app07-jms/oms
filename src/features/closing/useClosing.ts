@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchAttendanceHistory } from '@/features/attendance/attendanceService';
 import type { AttendanceRecord } from '@/features/attendance/attendanceRules';
+import { useHotelSettings } from '@/features/hotel/HotelSettingsProvider';
 import {
   applyClosingFilters,
   buildClosingKpis,
@@ -9,6 +10,7 @@ import {
   getPeriodRange,
   type ClosingFilters,
   type ClosingRow,
+  type PayrollAdjustment,
 } from '@/features/closing/closingRules';
 import {
   decideAdjustment,
@@ -31,12 +33,14 @@ interface PeriodData {
   records: AttendanceRecord[];
   employees: Employee[];
   schedules: ScheduleEntry[];
+  adjustments: PayrollAdjustment[];
   period: PayrollPeriod;
   summaries: LockedSummary[];
-  rows: ClosingRow[];
 }
 
 export function useClosing(period: string, filters: ClosingFilters) {
+  const { settings } = useHotelSettings();
+  const standardShiftHours = settings.standardShiftHours;
   const [data, setData] = useState<PeriodData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -59,9 +63,9 @@ export function useClosing(period: string, filters: ClosingFilters) {
         records,
         employees,
         schedules,
+        adjustments,
         period: payrollPeriod ?? RECONCILING,
         summaries,
-        rows: buildClosingRows(records, employees, adjustments),
       });
       setLoadError(null);
     } catch {
@@ -75,14 +79,23 @@ export function useClosing(period: string, filters: ClosingFilters) {
     void refresh();
   }, [refresh]);
 
+  const allRows = useMemo(
+    () =>
+      data
+        ? buildClosingRows(data.records, data.employees, data.adjustments, standardShiftHours)
+        : null,
+    [data, standardShiftHours]
+  );
+
   const fullKpis = useMemo(
-    () => (data ? buildClosingKpis(data.rows, data.schedules) : null),
-    [data]
+    () => (allRows && data ? buildClosingKpis(allRows, data.schedules) : null),
+    [allRows, data]
   );
 
   const visible = useMemo(
-    () => (data ? applyClosingFilters(data.rows, data.schedules, data.employees, filters) : null),
-    [data, filters]
+    () =>
+      allRows && data ? applyClosingFilters(allRows, data.schedules, data.employees, filters) : null,
+    [allRows, data, filters]
   );
 
   const kpis = useMemo(
@@ -110,9 +123,10 @@ export function useClosing(period: string, filters: ClosingFilters) {
 
   return {
     rows: visible?.rows ?? [],
-    totalRowCount: data?.rows.length ?? 0,
+    totalRowCount: allRows?.length ?? 0,
     kpis,
     summaries: data?.summaries ?? [],
+    standardShiftHours,
     period: data?.period ?? RECONCILING,
     isLocked: Boolean(isLocked),
     isLoading,
@@ -130,7 +144,7 @@ export function useClosing(period: string, filters: ClosingFilters) {
       run(`adjustment-${adjustmentId}`, () => decideAdjustment(adjustmentId, decision)),
     lock: () => {
       if (!data) return Promise.resolve(false);
-      const snapshots = buildLockSnapshots(data.employees, data.rows, data.schedules);
+      const snapshots = buildLockSnapshots(data.employees, allRows ?? [], data.schedules);
       return run('lock', () => lockPeriod(period, snapshots));
     },
   };

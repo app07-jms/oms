@@ -117,7 +117,11 @@ export function ClosingPage() {
         </TabsList>
 
         <TabsContent value="detail" className="mt-0 flex flex-col gap-4">
-          <ClosingKpiCards kpis={closing.kpis} isLoading={closing.isLoading} />
+          <ClosingKpiCards
+            kpis={closing.kpis}
+            isLoading={closing.isLoading}
+            standardShiftHours={closing.standardShiftHours}
+          />
 
           <ClosingControlBar
             period={period}
@@ -186,6 +190,7 @@ export function ClosingPage() {
               summaries={visibleSummaries}
               isLoading={closing.isLoading}
               isLocked={isLocked}
+              standardShiftHours={closing.standardShiftHours}
             />
           </div>
         </TabsContent>

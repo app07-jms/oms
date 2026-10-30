@@ -2,9 +2,12 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { navigationGroups } from '@/config/navigation';
 import { ActiveRoleProvider } from '@/features/permissions/activeRoleContext';
+import { HotelSettingsProvider } from '@/features/hotel/HotelSettingsProvider';
+import { DevRoleSwitcher } from '@/features/permissions/components/DevRoleSwitcher';
 import { ClosingPage } from '@/pages/ClosingPage';
 import { DailyAttendancePage } from '@/pages/DailyAttendancePage';
 import { EmployeeProfilesPage } from '@/pages/EmployeeProfilesPage';
+import { HotelSettingsPage } from '@/pages/HotelSettingsPage';
 import { LeavePage } from '@/pages/LeavePage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { RolePermissionsPage } from '@/pages/RolePermissionsPage';
@@ -22,11 +25,13 @@ const EMPLOYEE_PROFILES_PATH = '/nhan-su/ho-so-nhan-vien';
 const SYSTEM_SETTINGS_PATH = '/nhan-su/cau-hinh';
 const USER_MANAGEMENT_PATH = '/he-thong/nguoi-dung';
 const ROLE_PERMISSIONS_PATH = '/he-thong/phan-quyen-vai-tro';
+const HOTEL_SETTINGS_PATH = '/he-thong/cau-hinh-khach-san';
 const firstPage = navigationGroups[0].items[0].path;
 
 function App() {
   return (
     <ActiveRoleProvider>
+    <HotelSettingsProvider>
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to={firstPage} replace />} />
@@ -39,9 +44,10 @@ function App() {
         <Route path={SYSTEM_SETTINGS_PATH} element={<SystemSettingsPage />} />
         <Route path={USER_MANAGEMENT_PATH} element={<UserManagementPage />} />
         <Route path={ROLE_PERMISSIONS_PATH} element={<RolePermissionsPage />} />
+        <Route path={HOTEL_SETTINGS_PATH} element={<HotelSettingsPage />} />
         {navigationGroups.flatMap((group) =>
           group.items
-            .filter((item) => ![DAILY_ATTENDANCE_PATH, WORK_SCHEDULE_PATH, TIMESHEET_PATH, CLOSING_PATH, LEAVE_PATH, EMPLOYEE_PROFILES_PATH, SYSTEM_SETTINGS_PATH, USER_MANAGEMENT_PATH, ROLE_PERMISSIONS_PATH].includes(item.path))
+            .filter((item) => ![DAILY_ATTENDANCE_PATH, WORK_SCHEDULE_PATH, TIMESHEET_PATH, CLOSING_PATH, LEAVE_PATH, EMPLOYEE_PROFILES_PATH, SYSTEM_SETTINGS_PATH, USER_MANAGEMENT_PATH, ROLE_PERMISSIONS_PATH, HOTEL_SETTINGS_PATH].includes(item.path))
             .map((item) => (
               <Route key={item.path} path={item.path} element={<PlaceholderPage group={group} item={item} />} />
             ))
@@ -49,6 +55,8 @@ function App() {
         <Route path="*" element={<Navigate to={firstPage} replace />} />
       </Route>
     </Routes>
+    <DevRoleSwitcher />
+    </HotelSettingsProvider>
     </ActiveRoleProvider>
   );
 }
