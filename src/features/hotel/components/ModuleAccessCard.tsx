@@ -42,12 +42,13 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
 ];
 
 interface ModuleAccessCardProps {
+  hotelId: string;
   modules: HotelModules;
   canEdit: boolean;
   onSaved: () => Promise<void>;
 }
 
-export function ModuleAccessCard({ modules, canEdit, onSaved }: ModuleAccessCardProps) {
+export function ModuleAccessCard({ hotelId, modules, canEdit, onSaved }: ModuleAccessCardProps) {
   const [pendingKey, setPendingKey] = useState<HotelModuleKey | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +56,7 @@ export function ModuleAccessCard({ modules, canEdit, onSaved }: ModuleAccessCard
     setPendingKey(key);
     setError(null);
     try {
-      await saveHotelSettings({ modules: { [key]: enabled } });
+      await saveHotelSettings(hotelId, { modules: { [key]: enabled } });
       await onSaved();
       toast({ title: enabled ? 'Đã bật module.' : 'Đã tắt module.' });
     } catch (saveError) {

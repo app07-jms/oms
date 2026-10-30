@@ -6,6 +6,7 @@ export type HotelModuleKey = (typeof HOTEL_MODULE_KEYS)[number];
 export type HotelModules = Record<HotelModuleKey, boolean>;
 
 export interface HotelSettings {
+  id: string;
   name: string;
   address: string;
   idPrefix: string | null;

@@ -21,6 +21,7 @@ const QUICK_SHIFT_HOURS = [7, 8, 9] as const;
 const COORDINATE_DECIMALS = 6;
 
 interface GeofenceHoursCardProps {
+  hotelId: string;
   settings: HotelSettings;
   canEdit: boolean;
   onSaved: () => Promise<void>;
@@ -32,7 +33,7 @@ function parseDecimal(value: string): number | null {
   return Number(trimmed.replace(',', '.'));
 }
 
-export function GeofenceHoursCard({ settings, canEdit, onSaved }: GeofenceHoursCardProps) {
+export function GeofenceHoursCard({ hotelId, settings, canEdit, onSaved }: GeofenceHoursCardProps) {
   const [latitude, setLatitude] = useState(settings.latitude?.toString() ?? '');
   const [longitude, setLongitude] = useState(settings.longitude?.toString() ?? '');
   const [radius, setRadius] = useState(String(settings.geofenceRadiusM));
@@ -90,7 +91,7 @@ export function GeofenceHoursCard({ settings, canEdit, onSaved }: GeofenceHoursC
     setIsSaving(true);
     setError(null);
     try {
-      await saveHotelSettings({
+      await saveHotelSettings(hotelId, {
         latitude: parsedLatitude,
         longitude: parsedLongitude,
         geofenceRadiusM: parsedRadius,

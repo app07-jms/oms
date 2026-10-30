@@ -1,6 +1,7 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import { Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSession } from '@/features/auth/AuthProvider';
 import { useCatalogResource } from '@/hooks/useCatalogResource';
 import type { HotelSettings } from '@/features/hotel/hotelRules';
 import { fetchHotelSettings } from '@/features/hotel/hotelService';
@@ -15,13 +16,12 @@ interface HotelSettingsContextValue {
 const HotelSettingsContext = createContext<HotelSettingsContextValue | null>(null);
 
 export function HotelSettingsProvider({ children }: { children: ReactNode }) {
-  const catalog = useCatalogResource(fetchHotelSettings, LOAD_ERROR);
+  const hotelId = useSession().hotel.id;
+  const load = useCallback(() => fetchHotelSettings(hotelId), [hotelId]);
+  const catalog = useCatalogResource(load, LOAD_ERROR);
   const settings = catalog.data;
   const refresh = catalog.refresh;
-  const value = useMemo(
-    () => (settings ? { settings, refresh } : null),
-    [settings, refresh],
-  );
+  const value = useMemo(() => (settings ? { settings, refresh } : null), [settings, refresh]);
 
   if (!value) {
     return (
