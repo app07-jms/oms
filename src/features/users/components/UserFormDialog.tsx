@@ -5,12 +5,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { RoleSummary } from '@/features/permissions/permissionRules';
 import {
-  USER_ROLES,
-  USER_ROLE_LABELS,
   createEmptyAccountDraft,
   employeeOptionLabel,
-  isUserRole,
   validateAccountDraft,
   type EmployeeOption,
   type NewAccountDraft,
@@ -21,13 +19,14 @@ const NO_PROFILE = 'none';
 
 interface UserFormDialogProps {
   unlinkedEmployees: EmployeeOption[];
+  roles: RoleSummary[];
   isSaving: boolean;
   errorMessage: string | null;
   onCancel: () => void;
   onSubmit: (draft: NewAccountDraft) => void;
 }
 
-export function UserFormDialog({ unlinkedEmployees, isSaving, errorMessage, onCancel, onSubmit }: UserFormDialogProps) {
+export function UserFormDialog({ unlinkedEmployees, roles, isSaving, errorMessage, onCancel, onSubmit }: UserFormDialogProps) {
   const [draft, setDraft] = useState<NewAccountDraft>(createEmptyAccountDraft);
   const [validationError, setValidationError] = useState<string | null>(null);
   const isLinked = draft.employeeSystemUid !== '';
@@ -122,17 +121,15 @@ export function UserFormDialog({ unlinkedEmployees, isSaving, errorMessage, onCa
               </Label>
               <Select
                 value={draft.role}
-                onValueChange={(value) => {
-                  if (isUserRole(value)) setDraft((current) => ({ ...current, role: value }));
-                }}
-              >
+                onValueChange={(value) => setDraft((current) => ({ ...current, role: value }))}
+                >
                 <SelectTrigger id="account-role" className={fieldClass}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {USER_ROLES.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {USER_ROLE_LABELS[role]}
+                  {roles.map((role) => (
+                    <SelectItem key={role.key} value={role.key}>
+                      {role.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

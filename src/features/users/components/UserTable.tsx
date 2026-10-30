@@ -1,17 +1,16 @@
-import { KeyRound, Link2, Lock, Unlock, UserCog } from 'lucide-react';
+import { KeyRound, Link2, Lock, ShieldCheck, Unlock, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  USER_ROLE_BADGE_CLASS,
-  USER_ROLE_LABELS,
-  type UserAccountRow,
-} from '@/features/users/userRules';
+import { ROLE_TONE_BADGE_CLASS, type RoleSummary } from '@/features/permissions/permissionRules';
+import type { UserAccountRow } from '@/features/users/userRules';
 
 interface UserTableProps {
   rows: UserAccountRow[];
+  roles: RoleSummary[];
   hasAnyAccounts: boolean;
   isBusy: boolean;
   onLinkProfile: (row: UserAccountRow) => void;
   onEditRole: (row: UserAccountRow) => void;
+  onOverridePermissions: (row: UserAccountRow) => void;
   onResetPassword: (row: UserAccountRow) => void;
   onToggleActive: (row: UserAccountRow) => void;
 }
@@ -22,13 +21,16 @@ const BADGE_BASE = 'inline-flex items-center whitespace-nowrap rounded-full bord
 
 export function UserTable({
   rows,
+  roles,
   hasAnyAccounts,
   isBusy,
   onLinkProfile,
   onEditRole,
+  onOverridePermissions,
   onResetPassword,
   onToggleActive,
 }: UserTableProps) {
+  const roleByKey = new Map(roles.map((role) => [role.key, role]));
   return (
     <div className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -61,8 +63,8 @@ export function UserTable({
                   <td className={CELL_CLASS}>{row.fullName}</td>
                   <td className={`${CELL_CLASS} text-[#5C6670]`}>{row.employee?.department ?? '—'}</td>
                   <td className={CELL_CLASS}>
-                    <span className={`${BADGE_BASE} ${USER_ROLE_BADGE_CLASS[row.role]}`}>
-                      {USER_ROLE_LABELS[row.role]}
+                    <span className={`${BADGE_BASE} ${ROLE_TONE_BADGE_CLASS[roleByKey.get(row.role)?.tone ?? 'slate']}`}>
+                      {roleByKey.get(row.role)?.name ?? row.role}
                     </span>
                   </td>
                   <td className={CELL_CLASS}>
@@ -110,6 +112,16 @@ export function UserTable({
                       >
                         <UserCog className="mr-1.5 h-3.5 w-3.5" />
                         Sửa vai trò
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onOverridePermissions(row)}
+                        disabled={isBusy}
+                        className="h-8 border-[#4F7284]/40 text-[#3D5B69] hover:bg-[#4F7284]/5 hover:text-[#3D5B69]"
+                      >
+                        <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
+                        Phân quyền riêng
                       </Button>
                       <Button
                         variant="outline"

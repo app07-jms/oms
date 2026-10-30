@@ -1,13 +1,13 @@
 {
   "projectId": "72515027",
   "functions": {
+    "manage-user-accounts": {
+      "hasChanged": false,
+      "hash": "7ef1b8f5e50446b0e1f0ecbf20c110c8cbfa42fd4610675ab99495bb566198bf"
+    },
     "provision-employee-account": {
       "hasChanged": false,
       "hash": "d076d90d13a6b0e305a0fb8b2815369d9cb79aa4c9b41a1603bddd3ff34f3fd8"
-    },
-    "manage-user-accounts": {
-      "hasChanged": false,
-      "hash": "376d81d29cbe1b9dd3381f77713b705cfb59a2663b7d52f6fe2ebca77199501b"
     }
   }
 }

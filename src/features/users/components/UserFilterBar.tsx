@@ -1,38 +1,33 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  USER_ROLES,
-  USER_ROLE_LABELS,
-  isUserRole,
-  type UserFilters,
-} from '@/features/users/userRules';
+import type { RoleSummary } from '@/features/permissions/permissionRules';
+import { type UserFilters } from '@/features/users/userRules';
 
 interface UserFilterBarProps {
   filters: UserFilters;
+  roles: RoleSummary[];
   onFiltersChange: (filters: UserFilters) => void;
 }
 
 const selectTriggerClass = 'h-10 w-full border-[#E2E8F0] bg-white sm:w-[200px]';
 
-export function UserFilterBar({ filters, onFiltersChange }: UserFilterBarProps) {
+export function UserFilterBar({ filters, roles, onFiltersChange }: UserFilterBarProps) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Select
           value={filters.role}
-          onValueChange={(value) => {
-            if (value === 'all' || isUserRole(value)) onFiltersChange({ ...filters, role: value });
-          }}
+          onValueChange={(value) => onFiltersChange({ ...filters, role: value })}
         >
           <SelectTrigger aria-label="Vai trò" className={selectTriggerClass}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả vai trò</SelectItem>
-            {USER_ROLES.map((role) => (
-              <SelectItem key={role} value={role}>
-                {USER_ROLE_LABELS[role]}
+            {roles.map((role) => (
+              <SelectItem key={role.key} value={role.key}>
+                {role.name}
               </SelectItem>
             ))}
           </SelectContent>

@@ -1,29 +1,14 @@
-export const USER_ROLES = ['admin', 'manager', 'hr', 'staff'] as const;
-export type UserRole = (typeof USER_ROLES)[number];
-
-export const USER_ROLE_LABELS: Record<UserRole, string> = {
-  admin: 'Admin',
-  manager: 'Quản lý',
-  hr: 'Nhân sự',
-  staff: 'Nhân viên',
-};
-
-export const USER_ROLE_BADGE_CLASS: Record<UserRole, string> = {
-  admin: 'border-red-200 bg-red-50 text-red-700',
-  manager: 'border-amber-200 bg-amber-50 text-amber-700',
-  hr: 'border-purple-200 bg-purple-50 text-purple-700',
-  staff: 'border-blue-200 bg-blue-50 text-blue-700',
-};
-
 export const DEFAULT_ACCOUNT_PASSWORD = 'Jenius@2026';
 
 export const USERNAME_PATTERN = /^[A-Za-z0-9._-]{3,30}$/;
+
+export const DEFAULT_ROLE_KEY = 'staff';
 
 export interface AppUser {
   systemUid: string;
   username: string;
   fullName: string;
-  role: UserRole;
+  role: string;
   isActive: boolean;
   employeeSystemUid: string | null;
 }
@@ -40,7 +25,7 @@ export interface UserAccountRow extends AppUser {
 }
 
 export interface UserFilters {
-  role: 'all' | UserRole;
+  role: 'all' | string;
   status: 'all' | 'active' | 'locked';
   search: string;
 }
@@ -55,15 +40,11 @@ export interface NewAccountDraft {
   employeeSystemUid: string;
   username: string;
   fullName: string;
-  role: UserRole;
+  role: string;
 }
 
 export function createEmptyAccountDraft(): NewAccountDraft {
-  return { employeeSystemUid: '', username: '', fullName: '', role: 'staff' };
-}
-
-export function isUserRole(value: string): value is UserRole {
-  return (USER_ROLES as readonly string[]).includes(value);
+  return { employeeSystemUid: '', username: '', fullName: '', role: DEFAULT_ROLE_KEY };
 }
 
 export function applyUserFilters(rows: UserAccountRow[], filters: UserFilters): UserAccountRow[] {

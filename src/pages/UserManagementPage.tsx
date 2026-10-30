@@ -8,6 +8,8 @@ import { LinkProfileDialog, RoleDialog } from '@/features/users/components/Accou
 import { UserFilterBar } from '@/features/users/components/UserFilterBar';
 import { UserFormDialog } from '@/features/users/components/UserFormDialog';
 import { UserTable } from '@/features/users/components/UserTable';
+import { UserOverrideDialog } from '@/features/permissions/components/UserOverrideDialog';
+import { useRoles } from '@/features/permissions/useRoles';
 import {
   DEFAULT_ACCOUNT_PASSWORD,
   DEFAULT_USER_FILTERS,
@@ -15,7 +17,6 @@ import {
   type NewAccountDraft,
   type UserAccountRow,
   type UserFilters,
-  type UserRole,
 } from '@/features/users/userRules';
 import {
   createUserAccount,
@@ -31,10 +32,13 @@ type DialogState =
   | { kind: 'role'; account: UserAccountRow }
   | { kind: 'link'; account: UserAccountRow }
   | { kind: 'reset'; account: UserAccountRow }
+  | { kind: 'overrides'; account: UserAccountRow }
   | null;
 
 export function UserManagementPage() {
   const catalog = useUserAccounts();
+  const roles = useRoles();
+  const roleList = roles.data ?? [];
   const [filters, setFilters] = useState<UserFilters>(DEFAULT_USER_FILTERS);
   const [dialog, setDialog] = useState<DialogState>(null);
 
@@ -65,7 +69,7 @@ export function UserManagementPage() {
     toast({ title: 'Đã tạo tài khoản', description: `Mật khẩu mặc định: ${DEFAULT_ACCOUNT_PASSWORD}` });
   }
 
-  async function handleRoleSave(account: UserAccountRow, role: UserRole) {
+  async function handleRoleSave(account: UserAccountRow, role: string) {
     const saved = await catalog.runAction(
       () => updateAccountRole(account.systemUid, role),
       'Không thể cập nhật vai trò. Vui lòng thử lại.',
@@ -129,7 +133,7 @@ export function UserManagementPage() {
         </Button>
       </div>
 
-      <UserFilterBar filters={filters} onFiltersChange={setFilters} />
+      <UserFilterBar filters={filters} roles={roleList} onFiltersChange={setFilters} />
 
       {catalog.actionError && !dialog && (
         <p role="alert" className="rounded-md border border-error/40 bg-error/5 px-4 py-3 text-sm text-error">
@@ -159,10 +163,12 @@ export function UserManagementPage() {
       {catalog.data && (
         <UserTable
           rows={visibleRows}
+          roles={roleList}
           hasAnyAccounts={accounts.length > 0}
           isBusy={catalog.isSaving}
           onLinkProfile={(account) => openDialog({ kind: 'link', account })}
           onEditRole={(account) => openDialog({ kind: 'role', account })}
+          onOverridePermissions={(account) => openDialog({ kind: 'overrides', account })}
           onResetPassword={(account) => openDialog({ kind: 'reset', account })}
           onToggleActive={(account) => void handleToggleActive(account)}
         />
@@ -171,6 +177,7 @@ export function UserManagementPage() {
       {dialog?.kind === 'create' && (
         <UserFormDialog
           unlinkedEmployees={unlinkedEmployees}
+          roles={roleList}
           isSaving={catalog.isSaving}
           errorMessage={catalog.actionError}
           onCancel={closeDialog}
@@ -181,6 +188,7 @@ export function UserManagementPage() {
       {dialog?.kind === 'role' && (
         <RoleDialog
           account={dialog.account}
+          roles={roleList}
           isSaving={catalog.isSaving}
           errorMessage={catalog.actionError}
           onCancel={closeDialog}
@@ -196,6 +204,15 @@ export function UserManagementPage() {
           errorMessage={catalog.actionError}
           onCancel={closeDialog}
           onSave={(employeeSystemUid) => void handleLinkSave(dialog.account, employeeSystemUid)}
+        />
+      )}
+
+      {dialog?.kind === 'overrides' && (
+        <UserOverrideDialog
+          userSystemUid={dialog.account.systemUid}
+          username={dialog.account.username}
+          roleKey={dialog.account.role}
+          onClose={closeDialog}
         />
       )}
 

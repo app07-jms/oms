@@ -9,7 +9,6 @@ const corsHeaders = {
 const DEFAULT_PASSWORD = "Jenius@2026";
 const ACCOUNT_EMAIL_DOMAIN = "accounts.jenius.local";
 const USERNAME_PATTERN = /^[A-Za-z0-9._-]{3,30}$/;
-const ROLES = ["admin", "manager", "hr", "staff"];
 
 function jsonResponse(body: Record<string, unknown>, status: number) {
   return new Response(JSON.stringify(body), {
@@ -24,7 +23,9 @@ function readString(value: unknown): string {
 
 async function createAccount(admin: ReturnType<typeof createClient>, payload: Record<string, unknown>) {
   const role = readString(payload.role);
-  if (!ROLES.includes(role)) {
+  const { data: roleRow, error: roleError } = await admin.from("roles").select("key").eq("key", role).maybeSingle();
+  if (roleError) throw roleError;
+  if (!roleRow) {
     return jsonResponse({ error: "Vai trò không hợp lệ." }, 400);
   }
 

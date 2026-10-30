@@ -1,11 +1,9 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import {
-  isUserRole,
   type EmployeeOption,
   type NewAccountDraft,
   type UserAccountRow,
-  type UserRole,
 } from '@/features/users/userRules';
 
 const LOAD_ERROR = 'Không thể tải danh sách tài khoản.';
@@ -88,7 +86,6 @@ export async function fetchUserAccounts(): Promise<{ accounts: UserAccountRow[];
   const employeeByUid = new Map(employees.map((employee) => [employee.systemUid, employee]));
 
   const accounts = assertRows(userResult.data, isAppUserRow).map((row): UserAccountRow => {
-    if (!isUserRole(row.role)) throw new Error(LOAD_ERROR);
     return {
       systemUid: row.system_uid,
       username: row.username,
@@ -125,7 +122,7 @@ export async function resetAccountPassword(systemUid: string): Promise<void> {
 
 async function updateAppUser(
   systemUid: string,
-  values: { role?: UserRole; is_active?: boolean; employee_system_uid?: string },
+  values: { role?: string; is_active?: boolean; employee_system_uid?: string },
   fallback: string,
 ): Promise<void> {
   const { data, error } = await supabase
@@ -137,7 +134,7 @@ async function updateAppUser(
   if (!data?.length) throw new Error(fallback);
 }
 
-export async function updateAccountRole(systemUid: string, role: UserRole): Promise<void> {
+export async function updateAccountRole(systemUid: string, role: string): Promise<void> {
   await updateAppUser(systemUid, { role }, 'Không thể cập nhật vai trò. Vui lòng thử lại.');
 }
 

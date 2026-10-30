@@ -4,28 +4,26 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { RoleSummary } from '@/features/permissions/permissionRules';
 import {
-  USER_ROLES,
-  USER_ROLE_LABELS,
   employeeOptionLabel,
-  isUserRole,
   type EmployeeOption,
   type UserAccountRow,
-  type UserRole,
 } from '@/features/users/userRules';
 
 const fieldClass = 'h-10 border-[#E2E8F0] bg-white focus-visible:ring-[#4F7284]';
 
 interface RoleDialogProps {
   account: UserAccountRow;
+  roles: RoleSummary[];
   isSaving: boolean;
   errorMessage: string | null;
   onCancel: () => void;
-  onSave: (role: UserRole) => void;
+  onSave: (role: string) => void;
 }
 
-export function RoleDialog({ account, isSaving, errorMessage, onCancel, onSave }: RoleDialogProps) {
-  const [role, setRole] = useState<UserRole>(account.role);
+export function RoleDialog({ account, roles, isSaving, errorMessage, onCancel, onSave }: RoleDialogProps) {
+  const [role, setRole] = useState<string>(account.role);
 
   return (
     <Dialog open onOpenChange={(open) => !open && !isSaving && onCancel()}>
@@ -43,17 +41,15 @@ export function RoleDialog({ account, isSaving, errorMessage, onCancel, onSave }
           </Label>
           <Select
             value={role}
-            onValueChange={(value) => {
-              if (isUserRole(value)) setRole(value);
-            }}
+            onValueChange={setRole}
           >
             <SelectTrigger id="role-select" className={fieldClass}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {USER_ROLES.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {USER_ROLE_LABELS[item]}
+              {roles.map((item) => (
+                <SelectItem key={item.key} value={item.key}>
+                  {item.name}
                 </SelectItem>
               ))}
             </SelectContent>
