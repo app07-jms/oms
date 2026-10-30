@@ -12,6 +12,7 @@ import { LeavePage } from '@/pages/LeavePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { RolePermissionsPage } from '@/pages/RolePermissionsPage';
+import { SystemSettingsPage } from '@/pages/SystemSettingsPage';
 import { TimesheetPage } from '@/pages/TimesheetPage';
 import { UserManagementPage } from '@/pages/UserManagementPage';
 import { WorkSchedulePage } from '@/pages/WorkSchedulePage';
@@ -23,6 +24,7 @@ const TIMESHEET_PATH = '/nhan-su/bang-cham-cong';
 const CLOSING_PATH = '/nhan-su/chot-cong';
 const LEAVE_PATH = '/nhan-su/so-phep';
 const EMPLOYEE_PROFILES_PATH = '/nhan-su/ho-so-nhan-vien';
+const SYSTEM_SETTINGS_PATH = '/nhan-su/cau-hinh';
 const USER_MANAGEMENT_PATH = '/he-thong/nguoi-dung';
 const ROLE_PERMISSIONS_PATH = '/he-thong/phan-quyen-vai-tro';
 const HOTEL_SETTINGS_PATH = '/he-thong/cau-hinh-khach-san';
@@ -33,6 +35,7 @@ const IMPLEMENTED_PATHS = [
   CLOSING_PATH,
   LEAVE_PATH,
   EMPLOYEE_PROFILES_PATH,
+  SYSTEM_SETTINGS_PATH,
   USER_MANAGEMENT_PATH,
   ROLE_PERMISSIONS_PATH,
   HOTEL_SETTINGS_PATH,
@@ -59,6 +62,7 @@ function App() {
           <Route path={CLOSING_PATH} element={<ClosingPage />} />
           <Route path={LEAVE_PATH} element={<LeavePage />} />
           <Route path={EMPLOYEE_PROFILES_PATH} element={<EmployeeProfilesPage />} />
+          <Route path={SYSTEM_SETTINGS_PATH} element={<SystemSettingsPage />} />
           <Route path={USER_MANAGEMENT_PATH} element={<UserManagementPage />} />
           <Route path={ROLE_PERMISSIONS_PATH} element={<RolePermissionsPage />} />
           <Route path={HOTEL_SETTINGS_PATH} element={<HotelSettingsPage />} />

@@ -29,6 +29,7 @@ export const navigationGroups: NavGroup[] = [
       { title: 'Sổ phép', path: '/nhan-su/so-phep', featureKey: 'leave' },
       { title: 'Chốt công', path: '/nhan-su/chot-cong', featureKey: 'closing' },
       { title: 'Hồ sơ nhân viên', path: '/nhan-su/ho-so-nhan-vien', featureKey: 'employees' },
+      { title: 'Cấu hình', path: '/nhan-su/cau-hinh', featureKey: 'system' },
     ],
   },
   {
