@@ -10,6 +10,8 @@ export interface AuthAccount {
   username: string;
   fullName: string;
   roleKey: string;
+  employeeCode: string | null;
+  department: string | null;
 }
 
 export interface HotelRef {

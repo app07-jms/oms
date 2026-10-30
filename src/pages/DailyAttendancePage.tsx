@@ -9,24 +9,11 @@ import { useAttendance } from '@/features/attendance/useAttendance';
 import { toast } from '@/hooks/use-toast';
 
 export function DailyAttendancePage() {
-  const [isInRange, setIsInRange] = useState(true);
-  const [isDeviceValid, setIsDeviceValid] = useState(true);
   const [range, setRange] = useState<DateRange>(() => getPresetRange('this-month'));
-  const {
-    records,
-    openRecord,
-    pendingCheckIn,
-    isLoading,
-    isSubmitting,
-    error,
-    checkIn,
-    checkOut,
-    submitAdjustment,
-    dismissAdjustment,
-  } = useAttendance(range);
+  const attendance = useAttendance(range);
 
   async function handleSubmitAdjustment(request: AttendanceAdjustmentRequest): Promise<boolean> {
-    const submitted = await submitAdjustment(request);
+    const submitted = await attendance.submitAdjustment(request);
     if (submitted) {
       toast({ title: 'Đã gửi đề xuất điều chỉnh ca cho Quản lý duyệt.' });
     }
@@ -38,36 +25,36 @@ export function DailyAttendancePage() {
       <PageHeading groupTitle="Nhân sự" title="Chấm công hàng ngày" />
 
       <AttendanceCheckCard
-        openRecord={openRecord}
-        isLoading={isLoading}
-        isSubmitting={isSubmitting}
-        isInRange={isInRange}
-        isDeviceValid={isDeviceValid}
-        error={error}
-        onInRangeChange={setIsInRange}
-        onDeviceValidChange={setIsDeviceValid}
-        onCheckIn={checkIn}
-        onCheckOut={checkOut}
+        openRecord={attendance.openRecord}
+        todayRecord={attendance.todayRecord}
+        lastGps={attendance.lastGps}
+        hasHotelLocation={attendance.hasHotelLocation}
+        isLoading={attendance.isLoading}
+        isSubmitting={attendance.isSubmitting}
+        canCheckIn={attendance.canCheckIn}
+        error={attendance.error}
+        onCheckIn={attendance.checkIn}
+        onCheckOut={attendance.checkOut}
       />
 
       <section className="rounded-lg border border-border bg-background shadow-sm">
         <div className="flex flex-col gap-4 border-b border-border p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-semibold text-foreground">Lịch sử chấm công</h2>
-            <p className="text-sm text-muted-foreground">Chỉ hiển thị dữ liệu của bạn.</p>
+            <p className="text-sm text-muted-foreground">{attendance.historyDescription}</p>
           </div>
           <AttendanceFilterBar range={range} onRangeChange={setRange} />
         </div>
-        <AttendanceLogTable records={records} isLoading={isLoading} />
+        <AttendanceLogTable records={attendance.records} isLoading={attendance.isLoading} />
       </section>
 
-      {pendingCheckIn && (
+      {attendance.pendingCheckIn && (
         <AdjustmentRequestDialog
-          evaluation={pendingCheckIn}
-          isSubmitting={isSubmitting}
-          error={error}
+          evaluation={attendance.pendingCheckIn.evaluation}
+          isSubmitting={attendance.isSubmitting}
+          error={attendance.error}
           onSubmit={handleSubmitAdjustment}
-          onCancel={dismissAdjustment}
+          onCancel={attendance.dismissAdjustment}
         />
       )}
     </div>

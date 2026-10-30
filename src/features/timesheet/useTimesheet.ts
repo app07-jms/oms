@@ -5,6 +5,7 @@ import {
 } from '@/features/attendance/attendanceService';
 import type { AttendanceRecord, DateRange } from '@/features/attendance/attendanceRules';
 import { fetchEmployees } from '@/features/schedule/scheduleService';
+import { useSession } from '@/features/auth/AuthProvider';
 import type { Employee } from '@/features/schedule/scheduleRules';
 import {
   buildTimesheetRows,
@@ -22,6 +23,7 @@ export function useTimesheet() {
   const [filters, setFilters] = useState<TimesheetFilters>(DEFAULT_FILTERS);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const hotelId = useSession().hotel.id;
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [decidingId, setDecidingId] = useState<string | null>(null);
@@ -30,7 +32,10 @@ export function useTimesheet() {
   const refresh = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [rows, employeeList] = await Promise.all([fetchAttendanceHistory(null, range), fetchEmployees()]);
+      const [rows, employeeList] = await Promise.all([
+        fetchAttendanceHistory(hotelId, { kind: 'hotel' }, range),
+        fetchEmployees(),
+      ]);
       setRecords(rows);
       setEmployees(employeeList);
       setLoadError(null);

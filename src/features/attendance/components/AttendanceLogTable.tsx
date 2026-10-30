@@ -28,6 +28,7 @@ export function AttendanceLogTable({ records, isLoading }: AttendanceLogTablePro
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
+            <TableHead className="text-muted-foreground">Nhân viên</TableHead>
             <TableHead className="text-muted-foreground">Ngày</TableHead>
             <TableHead className="text-muted-foreground">Ca</TableHead>
             <TableHead className="text-muted-foreground">Vào ca</TableHead>
@@ -39,14 +40,14 @@ export function AttendanceLogTable({ records, isLoading }: AttendanceLogTablePro
         <TableBody>
           {isLoading && (
             <TableRow>
-              <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+              <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                 Đang tải dữ liệu chấm công...
               </TableCell>
             </TableRow>
           )}
           {!isLoading && records.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+              <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                 Chưa có dữ liệu chấm công trong khoảng thời gian này.
               </TableCell>
             </TableRow>
@@ -57,7 +58,13 @@ export function AttendanceLogTable({ records, isLoading }: AttendanceLogTablePro
               const workedMs = getWorkedMs(record);
               return (
                 <TableRow key={record.id}>
-                  <TableCell className="font-medium text-foreground">{formatWorkDate(record.workDate)}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">{record.employeeName}</span>
+                      <span className="text-xs text-muted-foreground">{record.employeeCode}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-foreground">{formatWorkDate(record.workDate)}</TableCell>
                   <TableCell className="text-foreground">{record.shiftName}</TableCell>
                   <TableCell className="tabular-nums text-foreground">{formatClockTime(record.checkInAt)}</TableCell>
                   <TableCell className="tabular-nums text-foreground">

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchAttendanceHistory } from '@/features/attendance/attendanceService';
 import type { AttendanceRecord } from '@/features/attendance/attendanceRules';
+import { useSession } from '@/features/auth/AuthProvider';
 import { useHotelSettings } from '@/features/hotel/HotelSettingsProvider';
 import {
   applyClosingFilters,
@@ -42,6 +43,7 @@ export function useClosing(period: string, filters: ClosingFilters) {
   const { settings } = useHotelSettings();
   const standardShiftHours = settings.standardShiftHours;
   const [data, setData] = useState<PeriodData | null>(null);
+  const hotelId = useSession().hotel.id;
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export function useClosing(period: string, filters: ClosingFilters) {
     const range = getPeriodRange(period);
     try {
       const [records, employees, schedules, adjustments, payrollPeriod, summaries] = await Promise.all([
-        fetchAttendanceHistory(null, range),
+        fetchAttendanceHistory(hotelId, { kind: 'hotel' }, range),
         fetchEmployees(),
         fetchSchedules(range.from ?? period, range.to ?? period),
         fetchPayrollAdjustments(range.from ?? period, range.to ?? period),

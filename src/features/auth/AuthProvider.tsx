@@ -2,13 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { isSessionExpired, SESSION_DURATION_MS, type AuthAccount, type HotelRef, type StoredSession } from '@/features/auth/authRules';
 import { clearStoredSession, readStoredSession, writeStoredSession } from '@/features/auth/authStorage';
 import { endAuthSession, fetchEffectivePermissions } from '@/features/auth/authService';
-import type { PermissionGrid } from '@/features/permissions/permissionRules';
+import { SUPER_ADMIN_ROLE_KEY, type PermissionGrid } from '@/features/permissions/permissionRules';
 import { supabase } from '@/lib/supabase';
 
 interface AuthContextValue {
   session: StoredSession | null;
   permissions: PermissionGrid | null;
   permissionsError: string | null;
+  viewerRoleOverride: string | null;
+  setViewerRoleOverride: (roleKey: string | null) => void;
   startSession: (account: AuthAccount, hotel: HotelRef) => void;
   logout: () => void;
 }
@@ -29,12 +31,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<StoredSession | null>(loadInitialSession);
   const [permissions, setPermissions] = useState<PermissionGrid | null>(null);
   const [permissionsError, setPermissionsError] = useState<string | null>(null);
+  const [viewerRoleOverride, setViewerRoleOverrideState] = useState<string | null>(null);
 
   const logout = useCallback(() => {
     clearStoredSession();
     setSession(null);
+    setViewerRoleOverrideState(null);
     void endAuthSession();
   }, []);
+
+  const setViewerRoleOverride = useCallback(
+    (roleKey: string | null) => {
+      if (session?.account.roleKey !== SUPER_ADMIN_ROLE_KEY) return;
+      setViewerRoleOverrideState(roleKey);
+    },
+    [session],
+  );
 
   const startSession = useCallback((account: AuthAccount, hotel: HotelRef) => {
     const next: StoredSession = { account, hotel, expiresAt: Date.now() + SESSION_DURATION_MS };
@@ -81,8 +93,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session]);
 
   const value = useMemo(
-    () => ({ session, permissions, permissionsError, startSession, logout }),
-    [session, permissions, permissionsError, startSession, logout],
+    () => ({
+      session,
+      permissions,
+      permissionsError,
+      viewerRoleOverride,
+      setViewerRoleOverride,
+      startSession,
+      logout,
+    }),
+    [session, permissions, permissionsError, viewerRoleOverride, setViewerRoleOverride, startSession, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -98,4 +118,13 @@ export function useSession(): StoredSession {
   const { session } = useAuth();
   if (!session) throw new Error('useSession must be used inside an authenticated route');
   return session;
+}
+
+export function useViewerRole(): { roleKey: string; setRoleKey: (roleKey: string | null) => void } {
+  const { session, viewerRoleOverride, setViewerRoleOverride } = useAuth();
+  if (!session) throw new Error('useViewerRole must be used inside an authenticated route');
+  return {
+    roleKey: viewerRoleOverride ?? session.account.roleKey,
+    setRoleKey: setViewerRoleOverride,
+  };
 }

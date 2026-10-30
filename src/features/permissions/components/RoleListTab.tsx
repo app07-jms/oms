@@ -10,7 +10,7 @@ import {
 } from '@/features/permissions/permissionRules';
 import { createRole, deleteRole, updateRoleDetails } from '@/features/permissions/permissionService';
 import { useRoles } from '@/features/permissions/useRoles';
-import { useSession } from '@/features/auth/AuthProvider';
+import { useViewerRole } from '@/features/auth/AuthProvider';
 import { filterRolesForViewer } from '@/features/permissions/permissionRules';
 
 type RoleDialogState =
@@ -27,7 +27,7 @@ export function RoleListTab() {
   const catalog = useRoles();
   const [dialog, setDialog] = useState<RoleDialogState>(null);
   const allRoles = catalog.data ?? [];
-  const activeRoleKey = useSession().account.roleKey;
+  const activeRoleKey = useViewerRole().roleKey;
   const roles = filterRolesForViewer(allRoles, activeRoleKey);
 
   function openDialog(next: NonNullable<RoleDialogState>) {

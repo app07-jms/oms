@@ -1,41 +1,23 @@
 import { CheckCircle2, TriangleAlert } from 'lucide-react';
-import { CURRENT_EMPLOYEE, SHIFTS } from '@/config/attendance';
-import { distanceInMeters, type Coordinates } from '@/lib/geo';
-import { formatShiftHours } from '@/features/attendance/attendanceRules';
+import { useSession } from '@/features/auth/AuthProvider';
+import { formatShiftHours, resolveShiftForCheckIn, type GpsReading } from '@/features/attendance/attendanceRules';
 import { useHotelSettings } from '@/features/hotel/HotelSettingsProvider';
 import { cn } from '@/lib/utils';
 
-const METERS_PER_DEGREE_LATITUDE = 111_320;
-const IN_RANGE_OFFSET_RATIO = 0.1;
-const OUT_OF_RANGE_RADIUS_MULTIPLE = 3;
-
 interface AttendanceContextPanelProps {
-  isInRange: boolean;
-  isDeviceValid: boolean;
+  lastGps: GpsReading | null;
+  hasHotelLocation: boolean;
 }
 
-function offsetNorth(center: Coordinates, meters: number): Coordinates {
-  return { latitude: center.latitude + meters / METERS_PER_DEGREE_LATITUDE, longitude: center.longitude };
-}
-
-export function AttendanceContextPanel({ isInRange, isDeviceValid }: AttendanceContextPanelProps) {
+export function AttendanceContextPanel({ lastGps, hasHotelLocation }: AttendanceContextPanelProps) {
+  const { account, hotel } = useSession();
   const { settings } = useHotelSettings();
-  const initials = CURRENT_EMPLOYEE.fullName
+  const shift = resolveShiftForCheckIn(new Date());
+  const initials = account.fullName
     .split(' ')
     .slice(-2)
     .map((word) => word[0])
     .join('');
-
-  const center =
-    settings.latitude !== null && settings.longitude !== null
-      ? { latitude: settings.latitude, longitude: settings.longitude }
-      : null;
-  const radius = settings.geofenceRadiusM;
-  const simulatedPosition = center
-    ? offsetNorth(center, isInRange ? radius * IN_RANGE_OFFSET_RATIO : radius * OUT_OF_RANGE_RADIUS_MULTIPLE)
-    : null;
-  const distance =
-    center && simulatedPosition ? Math.round(distanceInMeters(center, simulatedPosition)) : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,66 +26,87 @@ export function AttendanceContextPanel({ isInRange, isDeviceValid }: AttendanceC
           {initials}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-lg font-semibold text-foreground">{CURRENT_EMPLOYEE.fullName}</p>
-          <p className="text-sm text-muted-foreground">
-            {CURRENT_EMPLOYEE.position} · {CURRENT_EMPLOYEE.department}
+          <p className="truncate text-lg font-semibold text-foreground">{account.fullName}</p>
+          <p className="text-sm text-muted-foreground">{account.department ?? 'Chưa có bộ phận'}</p>
+          <p className="text-xs text-muted-foreground">
+            {account.employeeCode ? `Mã nhân viên: ${account.employeeCode}` : 'Chưa liên kết hồ sơ nhân viên'}
           </p>
-          <p className="text-xs text-muted-foreground">Mã nhân viên: {CURRENT_EMPLOYEE.code}</p>
         </div>
       </div>
 
       <div className="flex flex-col gap-1 rounded-md border border-border p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Ca hôm nay</p>
         <div className="flex items-baseline justify-between gap-4">
-          <p className="text-base font-semibold text-foreground">{SHIFTS.day.name}</p>
-          <p className="text-sm tabular-nums text-muted-foreground">{formatShiftHours(SHIFTS.day)}</p>
+          <p className="text-base font-semibold text-foreground">{shift.name}</p>
+          <p className="text-sm tabular-nums text-muted-foreground">{formatShiftHours(shift)}</p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <VerificationRow
-          isValid={isInRange}
-          validText="GPS: Hợp lệ"
-          invalidText="GPS: Ngoài bán kính"
-          detail={
-            distance === null
-              ? 'Chưa cấu hình vị trí khách sạn. Vui lòng cập nhật trong Cấu hình khách sạn.'
-              : `Cách ${settings.name} khoảng ${distance} m (cho phép ${radius} m)`
-          }
-        />
-        <VerificationRow
-          isValid={isDeviceValid}
-          validText="Thiết bị: Đã xác thực"
-          invalidText="Thiết bị: Chưa xác thực"
-        />
-      </div>
+      <GpsRow lastGps={lastGps} hasHotelLocation={hasHotelLocation} hotelName={hotel.name} radiusM={settings.geofenceRadiusM} />
     </div>
   );
 }
 
-interface VerificationRowProps {
-  isValid: boolean;
-  validText: string;
-  invalidText: string;
-  detail?: string;
+interface GpsRowProps {
+  lastGps: GpsReading | null;
+  hasHotelLocation: boolean;
+  hotelName: string;
+  radiusM: number;
 }
 
-function VerificationRow({ isValid, validText, invalidText, detail }: VerificationRowProps) {
-  const Icon = isValid ? CheckCircle2 : TriangleAlert;
+function GpsRow({ lastGps, hasHotelLocation, hotelName, radiusM }: GpsRowProps) {
+  if (!hasHotelLocation) {
+    return (
+      <VerificationRow
+        tone="warning"
+        title="Vị trí: Chưa cấu hình"
+        detail="Khách sạn chưa có tọa độ. Vui lòng cập nhật trong Cấu hình khách sạn."
+      />
+    );
+  }
+  if (!lastGps) {
+    return (
+      <VerificationRow
+        tone="neutral"
+        title="Vị trí: Chưa kiểm tra"
+        detail={`Vị trí được kiểm tra khi vào và ra ca (bán kính ${radiusM} m quanh ${hotelName}).`}
+      />
+    );
+  }
+  const isValid = lastGps.status === 'valid';
+  return (
+    <VerificationRow
+      tone={isValid ? 'success' : 'warning'}
+      title={isValid ? 'Vị trí: Hợp lệ' : 'Vị trí: Ngoại lệ / Ngoài bán kính'}
+      detail={`Cách ${hotelName} khoảng ${lastGps.distanceM} m (cho phép ${radiusM} m)`}
+    />
+  );
+}
+
+interface VerificationRowProps {
+  tone: 'success' | 'warning' | 'neutral';
+  title: string;
+  detail: string;
+}
+
+function VerificationRow({ tone, title, detail }: VerificationRowProps) {
+  const Icon = tone === 'success' ? CheckCircle2 : TriangleAlert;
 
   return (
     <div className="flex items-start gap-3">
       <span
         className={cn(
           'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full',
-          isValid ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
+          tone === 'success' && 'bg-success/10 text-success',
+          tone === 'warning' && 'bg-error/10 text-error',
+          tone === 'neutral' && 'bg-muted text-muted-foreground',
         )}
       >
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-medium text-foreground">{isValid ? validText : invalidText}</p>
-        {detail && <p className="text-xs text-muted-foreground">{detail}</p>}
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground">{detail}</p>
       </div>
     </div>
   );

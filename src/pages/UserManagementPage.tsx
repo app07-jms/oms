@@ -8,7 +8,7 @@ import { LinkProfileDialog, RoleDialog } from '@/features/users/components/Accou
 import { UserFilterBar } from '@/features/users/components/UserFilterBar';
 import { UserFormDialog } from '@/features/users/components/UserFormDialog';
 import { UserTable } from '@/features/users/components/UserTable';
-import { useSession } from '@/features/auth/AuthProvider';
+import { useViewerRole } from '@/features/auth/AuthProvider';
 import { UserOverrideDialog } from '@/features/permissions/components/UserOverrideDialog';
 import { canViewerSeeRole, filterRolesForViewer } from '@/features/permissions/permissionRules';
 import { useRoles } from '@/features/permissions/useRoles';
@@ -40,7 +40,7 @@ type DialogState =
 export function UserManagementPage() {
   const catalog = useUserAccounts();
   const roles = useRoles();
-  const activeRoleKey = useSession().account.roleKey;
+  const activeRoleKey = useViewerRole().roleKey;
   const roleList = filterRolesForViewer(roles.data ?? [], activeRoleKey);
   const [filters, setFilters] = useState<UserFilters>(DEFAULT_USER_FILTERS);
   const [dialog, setDialog] = useState<DialogState>(null);

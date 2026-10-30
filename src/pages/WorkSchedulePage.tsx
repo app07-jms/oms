@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { CheckCircle2, Download, Upload, X } from 'lucide-react';
 import { PageHeading } from '@/components/layout/PageHeading';
 import { Button } from '@/components/ui/button';
-import { CURRENT_EMPLOYEE } from '@/config/attendance';
 import type { ShiftCode } from '@/config/schedule';
 import { ScheduleActionBar } from '@/features/schedule/components/ScheduleActionBar';
 import { ScheduleGrid } from '@/features/schedule/components/ScheduleGrid';
@@ -17,6 +16,7 @@ import {
   type ScheduleEntry,
 } from '@/features/schedule/scheduleRules';
 import { useWeeklySchedule } from '@/features/schedule/useWeeklySchedule';
+import { useSession } from '@/features/auth/AuthProvider';
 
 interface SelectedShift {
   employee: Employee;
@@ -26,6 +26,7 @@ interface SelectedShift {
 
 export function WorkSchedulePage() {
   const schedule = useWeeklySchedule();
+  const { account } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [selected, setSelected] = useState<SelectedShift | null>(null);
@@ -154,7 +155,7 @@ export function WorkSchedulePage() {
           employee={selected.employee}
           workDate={selected.workDate}
           entry={selected.entry}
-          isOwnSchedule={selected.employee.code === CURRENT_EMPLOYEE.code}
+          isOwnSchedule={selected.employee.code === account.employeeCode}
           onChanged={schedule.reload}
         />
       )}

@@ -1,10 +1,3 @@
-export const CURRENT_EMPLOYEE = {
-  code: 'NV001',
-  fullName: 'Nguyễn Minh Anh',
-  department: 'Lễ tân',
-  position: 'Nhân viên lễ tân',
-};
-
 export const SHIFTS = {
   day: { name: 'Ca sáng', startHour: 8, endHour: 17 },
   night: { name: 'Ca đêm', startHour: 22, endHour: 6 },

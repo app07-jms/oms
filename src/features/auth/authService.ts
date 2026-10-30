@@ -18,6 +18,18 @@ interface AccountRow {
   full_name: string;
   role: string;
   is_active: boolean;
+  employee_system_uid: string | null;
+}
+
+interface EmployeeRef {
+  code: string;
+  department: string;
+}
+
+function isEmployeeRef(value: unknown): value is EmployeeRef {
+  if (!value || typeof value !== 'object') return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.code === 'string' && typeof row.department === 'string';
 }
 
 interface HotelRow {
@@ -58,7 +70,7 @@ export async function signInWithUsername(username: string, password: string): Pr
 
   const { data: row, error: profileError } = await supabase
     .from('app_users')
-    .select('system_uid, username, full_name, role, is_active')
+    .select('system_uid, username, full_name, role, is_active, employee_system_uid')
     .eq('auth_user_id', data.user.id)
     .maybeSingle();
   if (profileError) {
@@ -78,13 +90,29 @@ export async function signInWithUsername(username: string, password: string): Pr
     throw new Error(INACTIVE_ACCOUNT);
   }
 
+  const employee = await fetchLinkedEmployee(row.employee_system_uid);
+
   return {
     systemUid: row.system_uid,
     authUserId: data.user.id,
     username: row.username,
     fullName: row.full_name,
     roleKey: row.role,
+    employeeCode: employee?.code ?? null,
+    department: employee?.department ?? null,
   };
+}
+
+async function fetchLinkedEmployee(employeeSystemUid: string | null): Promise<EmployeeRef | null> {
+  if (!employeeSystemUid) return null;
+  const { data, error } = await supabase
+    .from('employees')
+    .select('code, department')
+    .eq('system_uid', employeeSystemUid)
+    .maybeSingle();
+  if (error) throw new Error(PROFILE_LOAD_ERROR);
+  if (!data || !isEmployeeRef(data)) throw new Error(PROFILE_LOAD_ERROR);
+  return data;
 }
 
 export async function fetchAccountHotels(account: AuthAccount): Promise<HotelRef[]> {

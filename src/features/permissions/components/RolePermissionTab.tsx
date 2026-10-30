@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { useCatalogResource } from '@/hooks/useCatalogResource';
-import { useSession } from '@/features/auth/AuthProvider';
+import { useViewerRole } from '@/features/auth/AuthProvider';
 import { PermissionMatrix } from '@/features/permissions/components/PermissionMatrix';
 import {
   DATA_SCOPE_LABELS,
@@ -38,7 +38,7 @@ async function loadRoleEditorData(roleKey: string | null): Promise<RoleEditorDat
 
 export function RolePermissionTab() {
   const roles = useRoles();
-  const activeRoleKey = useSession().account.roleKey;
+  const activeRoleKey = useViewerRole().roleKey;
   const visibleRoles = filterRolesForViewer(roles.data ?? [], activeRoleKey);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const activeKey = visibleRoles.some((role) => role.key === selectedKey) ? selectedKey : visibleRoles[0]?.key ?? null;

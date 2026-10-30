@@ -1,11 +1,26 @@
 import { ADJUSTMENT_REASONS, LATE_TOLERANCE_MINUTES, SHIFTS, type AdjustmentReason } from '@/config/attendance';
+import type { DataScope } from '@/features/permissions/permissionRules';
 
 export type AdjustmentStatus = 'pending' | 'approved' | 'rejected';
 export type OvertimeStatus = 'approved' | 'rejected';
+export type GpsStatus = 'valid' | 'out-of-range';
+
+export interface GpsReading {
+  status: GpsStatus;
+  distanceM: number;
+}
+
+export type AttendanceScope =
+  | { kind: 'self'; systemUid: string }
+  | { kind: 'department'; departments: string[] }
+  | { kind: 'hotel' };
 
 export interface AttendanceRecord {
   id: string;
+  hotelId: string;
+  appUserSystemUid: string;
   employeeCode: string;
+  employeeName: string | null;
   shiftName: string;
   workDate: string;
   checkInAt: string;
@@ -14,6 +29,8 @@ export interface AttendanceRecord {
   adjustmentReason: AdjustmentReason | null;
   adjustmentNote: string | null;
   otStatus: OvertimeStatus | null;
+  checkInGps: GpsReading | null;
+  checkOutGps: GpsReading | null;
   updatedAt: string;
 }
 
@@ -150,6 +167,24 @@ export function formatWorkDate(workDate: string): string {
 
 export function formatClockTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+
+export function resolveAttendanceScope(
+  dataScope: DataScope,
+  departments: string[],
+  self: { systemUid: string },
+): AttendanceScope {
+  if (dataScope === 'hotel') return { kind: 'hotel' };
+  if (dataScope === 'department') return { kind: 'department', departments };
+  return { kind: 'self', systemUid: self.systemUid };
+}
+
+export function formatElapsedClock(ms: number): string {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds].map((part) => String(part).padStart(2, '0')).join(':');
 }
 
 export function formatShiftHours(shift: { startHour: number; endHour: number }): string {
