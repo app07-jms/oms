@@ -6,10 +6,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { useCatalogResource } from '@/hooks/useCatalogResource';
+import { useActiveRole } from '@/features/permissions/activeRoleContext';
 import { PermissionMatrix } from '@/features/permissions/components/PermissionMatrix';
 import {
   DATA_SCOPE_LABELS,
   ROLE_TONE_BADGE_CLASS,
+  filterRolesForViewer,
   type DataScope,
   type FeatureKey,
   type PermissionAction,
@@ -36,9 +38,11 @@ async function loadRoleEditorData(roleKey: string | null): Promise<RoleEditorDat
 
 export function RolePermissionTab() {
   const roles = useRoles();
+  const { activeRoleKey } = useActiveRole();
+  const visibleRoles = filterRolesForViewer(roles.data ?? [], activeRoleKey);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const activeKey = selectedKey ?? roles.data?.[0]?.key ?? null;
-  const activeRole = roles.data?.find((role) => role.key === activeKey) ?? null;
+  const activeKey = visibleRoles.some((role) => role.key === selectedKey) ? selectedKey : visibleRoles[0]?.key ?? null;
+  const activeRole = visibleRoles.find((role) => role.key === activeKey) ?? null;
 
   const loadEditor = useCallback(() => loadRoleEditorData(activeKey), [activeKey]);
   const editor = useCatalogResource(loadEditor, LOAD_ERROR);
@@ -56,7 +60,7 @@ export function RolePermissionTab() {
               <SelectValue placeholder="Chưa có vai trò" />
             </SelectTrigger>
             <SelectContent>
-              {(roles.data ?? []).map((role) => (
+              {visibleRoles.map((role) => (
                 <SelectItem key={role.key} value={role.key}>
                   {role.name}
                 </SelectItem>

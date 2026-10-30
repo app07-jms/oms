@@ -10,6 +10,8 @@ import {
 } from '@/features/permissions/permissionRules';
 import { createRole, deleteRole, updateRoleDetails } from '@/features/permissions/permissionService';
 import { useRoles } from '@/features/permissions/useRoles';
+import { useActiveRole } from '@/features/permissions/activeRoleContext';
+import { filterRolesForViewer } from '@/features/permissions/permissionRules';
 
 type RoleDialogState =
   | { kind: 'add' }
@@ -24,7 +26,9 @@ const BADGE_BASE = 'inline-flex items-center whitespace-nowrap rounded-full bord
 export function RoleListTab() {
   const catalog = useRoles();
   const [dialog, setDialog] = useState<RoleDialogState>(null);
-  const roles = catalog.data ?? [];
+  const allRoles = catalog.data ?? [];
+  const { activeRoleKey } = useActiveRole();
+  const roles = filterRolesForViewer(allRoles, activeRoleKey);
 
   function openDialog(next: NonNullable<RoleDialogState>) {
     catalog.clearActionError();
@@ -158,7 +162,7 @@ export function RoleListTab() {
       {(dialog?.kind === 'add' || dialog?.kind === 'edit') && (
         <RoleFormDialog
           role={dialog.kind === 'edit' ? dialog.role : null}
-          existingNames={roles.map((role) => role.name)}
+          existingNames={allRoles.map((role) => role.name)}
           isSaving={catalog.isSaving}
           errorMessage={catalog.actionError}
           onCancel={closeDialog}

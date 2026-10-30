@@ -129,6 +129,16 @@ export interface RoleSummary {
   userCount: number;
 }
 
+export const SUPER_ADMIN_ROLE_KEY = 'super_admin';
+
+export function canViewerSeeRole(viewerRoleKey: string, roleKey: string): boolean {
+  return viewerRoleKey === SUPER_ADMIN_ROLE_KEY || roleKey !== SUPER_ADMIN_ROLE_KEY;
+}
+
+export function filterRolesForViewer(roles: RoleSummary[], viewerRoleKey: string): RoleSummary[] {
+  return roles.filter((role) => canViewerSeeRole(viewerRoleKey, role.key));
+}
+
 export function validateRoleName(name: string, existingNames: string[], currentName?: string): string | null {
   const trimmed = name.trim();
   if (!trimmed) return 'Vui lòng nhập tên vai trò.';

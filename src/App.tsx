@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { navigationGroups } from '@/config/navigation';
+import { ActiveRoleProvider } from '@/features/permissions/activeRoleContext';
 import { ClosingPage } from '@/pages/ClosingPage';
 import { DailyAttendancePage } from '@/pages/DailyAttendancePage';
 import { EmployeeProfilesPage } from '@/pages/EmployeeProfilesPage';
@@ -25,6 +26,7 @@ const firstPage = navigationGroups[0].items[0].path;
 
 function App() {
   return (
+    <ActiveRoleProvider>
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to={firstPage} replace />} />
@@ -47,6 +49,7 @@ function App() {
         <Route path="*" element={<Navigate to={firstPage} replace />} />
       </Route>
     </Routes>
+    </ActiveRoleProvider>
   );
 }
 

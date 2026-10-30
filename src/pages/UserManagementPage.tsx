@@ -8,7 +8,9 @@ import { LinkProfileDialog, RoleDialog } from '@/features/users/components/Accou
 import { UserFilterBar } from '@/features/users/components/UserFilterBar';
 import { UserFormDialog } from '@/features/users/components/UserFormDialog';
 import { UserTable } from '@/features/users/components/UserTable';
+import { useActiveRole } from '@/features/permissions/activeRoleContext';
 import { UserOverrideDialog } from '@/features/permissions/components/UserOverrideDialog';
+import { canViewerSeeRole, filterRolesForViewer } from '@/features/permissions/permissionRules';
 import { useRoles } from '@/features/permissions/useRoles';
 import {
   DEFAULT_ACCOUNT_PASSWORD,
@@ -38,7 +40,8 @@ type DialogState =
 export function UserManagementPage() {
   const catalog = useUserAccounts();
   const roles = useRoles();
-  const roleList = roles.data ?? [];
+  const { activeRoleKey } = useActiveRole();
+  const roleList = filterRolesForViewer(roles.data ?? [], activeRoleKey);
   const [filters, setFilters] = useState<UserFilters>(DEFAULT_USER_FILTERS);
   const [dialog, setDialog] = useState<DialogState>(null);
 
@@ -50,7 +53,10 @@ export function UserManagementPage() {
     return employees.filter((employee) => !linked.has(employee.systemUid));
   }, [accounts, employees]);
 
-  const visibleRows = useMemo(() => applyUserFilters(accounts, filters), [accounts, filters]);
+  const visibleRows = useMemo(
+    () => applyUserFilters(accounts.filter((account) => canViewerSeeRole(activeRoleKey, account.role)), filters),
+    [accounts, filters, activeRoleKey],
+  );
 
   function openDialog(next: NonNullable<DialogState>) {
     catalog.clearActionError();

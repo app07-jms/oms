@@ -3,6 +3,7 @@ import { Logo } from '@/components/layout/Logo';
 import { NotificationsMenu } from '@/components/layout/NotificationsMenu';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { Button } from '@/components/ui/button';
+import { DevRoleSwitcher } from '@/features/permissions/components/DevRoleSwitcher';
 
 interface AppHeaderProps {
   onOpenMenu: () => void;
@@ -29,6 +30,7 @@ export function AppHeader({ onOpenMenu }: AppHeaderProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <DevRoleSwitcher />
         <NotificationsMenu />
         <UserMenu />
       </div>
