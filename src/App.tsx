@@ -6,6 +6,7 @@ import { DailyAttendancePage } from '@/pages/DailyAttendancePage';
 import { EmployeeProfilesPage } from '@/pages/EmployeeProfilesPage';
 import { LeavePage } from '@/pages/LeavePage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
+import { SystemSettingsPage } from '@/pages/SystemSettingsPage';
 import { TimesheetPage } from '@/pages/TimesheetPage';
 import { WorkSchedulePage } from '@/pages/WorkSchedulePage';
 
@@ -15,6 +16,7 @@ const TIMESHEET_PATH = '/nhan-su/bang-cham-cong';
 const CLOSING_PATH = '/nhan-su/chot-cong';
 const LEAVE_PATH = '/nhan-su/so-phep';
 const EMPLOYEE_PROFILES_PATH = '/nhan-su/ho-so-nhan-vien';
+const SYSTEM_SETTINGS_PATH = '/nhan-su/cau-hinh';
 const firstPage = navigationGroups[0].items[0].path;
 
 function App() {
@@ -28,9 +30,10 @@ function App() {
         <Route path={CLOSING_PATH} element={<ClosingPage />} />
         <Route path={LEAVE_PATH} element={<LeavePage />} />
         <Route path={EMPLOYEE_PROFILES_PATH} element={<EmployeeProfilesPage />} />
+        <Route path={SYSTEM_SETTINGS_PATH} element={<SystemSettingsPage />} />
         {navigationGroups.flatMap((group) =>
           group.items
-            .filter((item) => ![DAILY_ATTENDANCE_PATH, WORK_SCHEDULE_PATH, TIMESHEET_PATH, CLOSING_PATH, LEAVE_PATH, EMPLOYEE_PROFILES_PATH].includes(item.path))
+            .filter((item) => ![DAILY_ATTENDANCE_PATH, WORK_SCHEDULE_PATH, TIMESHEET_PATH, CLOSING_PATH, LEAVE_PATH, EMPLOYEE_PROFILES_PATH, SYSTEM_SETTINGS_PATH].includes(item.path))
             .map((item) => (
               <Route key={item.path} path={item.path} element={<PlaceholderPage group={group} item={item} />} />
             ))
